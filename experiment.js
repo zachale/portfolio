@@ -9,7 +9,7 @@ var c = canvas.getContext('2d');
 var flipNumber = 0;
 var circle = 0;
 var square = 0;
-
+var stop = 0;
 var coinFlip = function(){
 
 var ellipse = function(x,y){
@@ -50,4 +50,10 @@ document.getElementById("heads or tails counter").innerHTML = "square = " + squa
 }
 var auto = function(){
   setInterval(coinFlip,0.01);
+  stop = 1;
+}
+var stopIt = function(){
+if (stop = 1){
+    stop = 0;
+}
 }
