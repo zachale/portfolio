@@ -18,11 +18,11 @@ var ellipse = function(x,y){
     c.strokeStyle = "FF0000";
     c.stroke();
   }
-
+  
   var sq = function(x,y,w,h){
       c.fillRect(x,y,w,h);
   }
-
+ 
 
 
 var flip = Math.random(0,1);
