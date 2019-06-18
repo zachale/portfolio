@@ -49,5 +49,5 @@ if (Weight <= 0){
 document.getElementById("heads or tails counter").innerHTML = "square = " + square + "  circle = " + circle;
 }
 var auto = function(){
-  setInterval(coinFlip,1);
+  setInterval(coinFlip,0.1);
 }
