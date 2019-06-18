@@ -9,8 +9,8 @@ var c = canvas.getContext('2d');
 var flipNumber = 0;
 var circle = 0;
 var square = 0;
-var stop = 0;
-var coinFlip = function(c){
+
+var coinFlip = function(){
 
 var ellipse = function(x,y){
     c.beginPath();
@@ -18,13 +18,13 @@ var ellipse = function(x,y){
     c.strokeStyle = "FF0000";
     c.stroke();
   }
-  
+
   var sq = function(x,y,w,h){
       c.fillRect(x,y,w,h);
   }
 
-while(c > s){
-var s
+
+
 var flip = Math.random(0,1);
 var Weight = Math.round(flip);
 
@@ -47,11 +47,7 @@ if (Weight <= 0){
   circle += 1;
 }
 document.getElementById("heads or tails counter").innerHTML = "square = " + square + "  circle = " + circle;
-s+=1
-}
 }
 var auto = function(){
-  setInterval(coinFlip(0),0.01);
-  stop = 1;
+  setInterval(coinFlip,100);
 }
-
