@@ -54,6 +54,4 @@ var auto = function(){
   setInterval(coinFlip(0),0.01);
   stop = 1;
 }
-var autos = function(){
-coinFlip(1000000000);
-}
+
