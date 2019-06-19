@@ -21,6 +21,14 @@ var ellipse = function(x,y){
   
   var sq = function(x,y,w,h){
       c.fillRect(x,y,w,h);
+      if (circle > square)
+      {
+         c.strokeStyle = "000000";
+      }
+      else
+      {
+          c.strokeStyle="FFFFFF";
+      }
   }
  
 
