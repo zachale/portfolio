@@ -13,8 +13,9 @@ var black = 0;
 var coinFlip = function(){
 
 
-  var sq = function(x,y,w,h,q,w,e,r,){
-      c.fillRect(q,w,e,r);
+  var sq = function(x,y,w,h,c){
+      c.Rect(x,y,w,h);
+      c.fill(c);
   }
  
 
@@ -33,11 +34,11 @@ document.getElementById("flipNumber").innerHTML="you are on flip " + flipNumber;
 c.clearRect(0, 0, canvas.width, canvas.height);
 
 if (Weight >= 1){
-  sq(canvas.width/2 - 30,canvas.height/2 - 30,50,50);
+  sq(canvas.width/2,canvas.height/2,50,50,FFFFFF);
   square += 1;
 }
 if (Weight <= 0){
-  ellipse(canvas.width/2,canvas.height/2);
+   sq(canvas.width/2,canvas.height/2,50,50,000000);
   circle += 1;
 }
 document.getElementById("heads or tails counter").innerHTML = "black = " + white + "  black = " + black;
