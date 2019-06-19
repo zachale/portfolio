@@ -7,21 +7,14 @@ var canvas = document.querySelector("canvas");
 
 var c = canvas.getContext('2d');
 var flipNumber = 0;
-var circle = 0;
-var square = 0;
+var white = 0;
+var black = 0;
 
 var coinFlip = function(){
 
-var ellipse = function(x,y){
-    c.beginPath();
-    c.arc(x,y,30,0,Math.PI * 2,false);
-    c.strokeStyle = "FF0000";
-    c.strokeWeight(4);
-    c.stroke();
-  }
-  
-  var sq = function(x,y,w,h){
-      c.fillRect(x,y,w,h);
+
+  var sq = function(x,y,w,h,q,w,e,r,){
+      c.fillRect(q,w,e,r);
   }
  
 
@@ -47,7 +40,7 @@ if (Weight <= 0){
   ellipse(canvas.width/2,canvas.height/2);
   circle += 1;
 }
-document.getElementById("heads or tails counter").innerHTML = "square = " + square + "  circle = " + circle;
+document.getElementById("heads or tails counter").innerHTML = "black = " + white + "  black = " + black;
 }
 var auto = function(){
   setInterval(coinFlip,10);
