@@ -16,6 +16,7 @@ var ellipse = function(x,y){
     c.beginPath();
     c.arc(x,y,30,0,Math.PI * 2,false);
     c.strokeStyle = "FF0000";
+    c.strokeWeight(4);
     c.stroke();
   }
   
