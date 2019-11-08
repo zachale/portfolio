@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>8 Ba;;</title>
+</head>
+<body>
+    <p id="answer">"answer"</p>
+    <script>
+        var element = document.getElementById("answer");
+        var answer = ["yes","no","maybe"]
+        function question(){
+            element.innerHTML = answer[Math.random() * answer.length];
+        }
+        
+    </script>
+    <button type="button" value="answer" onclick="question()">Answer</button>
+</body>
+</html>
