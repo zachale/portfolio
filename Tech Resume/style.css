@@ -1,0 +1,14 @@
+.jumbotron {
+    margin-top:50px;
+}
+.img-thumbnail {
+    transition:border 0.5s;
+}
+
+.img-thumbnail:hover {
+    border: 5px solid black;
+}
+
+h1 {
+    margin-bottom: 30px;
+}
