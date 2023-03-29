@@ -1,11 +1,12 @@
 :root{
-    --main-color: #C0C2E5;
-    --accent-color: #9B9FD7;
+    --main-color: #ebebeb;
+    --accent-color: #ffffff;
 }
 
 body {
-    background-color:var(--main-color);
-    color: rgba(255,255,255,.75); 
+    background-image:url("/tech-resume/bg.jpg");
+    filter: blur(50);
+    color: rgba(0, 0, 0, 0.75); 
 }
 
 .jumbotron {
@@ -35,7 +36,7 @@ img {
 }
 
 h1 {
-    color: rgb(255, 255, 255);
+    color: rgb(0, 0, 0);
     margin-bottom: 30px;
 }
 
@@ -45,7 +46,7 @@ p {
 }
 
 .row{
-    color:rgba(255,255,255,.75) ;
+    color:rgba(0, 0, 0, 0.75);  ;
     margin-top:50px;
     transition: max-width 1s ease-in-out, 1s ease-in-out, padding 1s ease-in-out, height 1s ease-in-out;
 }
@@ -77,6 +78,7 @@ iframe {
 }
 
 .navbar {
+    color: black;
     position: sticky;
     border: 2px solid black;
     border-top: 0px;
