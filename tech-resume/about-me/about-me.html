@@ -5,13 +5,64 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/tech-resume/style.css">
     <title>Document</title>
 </head>
 <body>
 
-    <div class="container-fluid"> <nav class="navbar navbar-expand-md navbar-dark navbar-fixed-top"> <a href="/tech-resume/about-me/about-me.html"> <img src="/tech-resume/profile.png" class = "profile-img navbar-nav ml-auto nav-item"> </a> <a class="navbar-brand" href="/tech-resume/index.html">Zachariah</a> <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarMenu"><span class="navbar-toggler-icon"></span></button> <div class="collapse navbar-collapse d-flex" id="navbarMenu"> <ul class="navbar-nav mr-auto"> <l1 class="nav-item dropdown"> <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"> Expierience </a> <div class="dropdown-menu" aria-labelledby="navbarDropdown"> <a class="dropdown-item" href="experience/hardware/hardware.html"> Hardware </a> <a class="dropdown-item" href="experience/software/software.html"> Software </a> </div> </l1> </div> </ul> </div> </nav> </div>
-        
+    <div class="container-fluid">
+        <nav class="navbar navbar-expand-md navbar-light navbar-fixed-top">
+            <a href="/tech-resume/about-me/about-me.html">
+                <img src="/tech-resume/profile.png" class = "profile-img navbar-nav ml-auto nav-item">
+            </a>
+            <a class="navbar-brand" href="/tech-resume/index.html">Zachariah</a>
+            
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarMenu"><span class="navbar-toggler-icon"></span></button>
+            
+            <div class="collapse navbar-collapse" id="navbarMenu">
+                
+                <ul class="navbar-nav mr-auto">
+                    <l1 class="nav-item dropdown"> 
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown">
+                            Expierience
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            
+                            <a class="dropdown-item" href="experience/hardware/hardware.html">
+                                Hardware
+                            </a>
+                            <a class="dropdown-item" href="experience/software/software.html">
+                                Software
+                            </a>
+                        </div>
+                    </l1>
+                    <button type="button" class="btn btn-success nav-item">Contact Me!</button>
+                </div>
+                </ul>
+            </div>
+            
+        </nav>
+    </div>
+
+    <div class = "container-fluid">
+        <div class="container-sm contact-form">
+            <div class = "col align-self-center">
+                <h1 id="contact-me">Contact me!</h1>
+            </div>
+            <div class="col align-self-center" >
+                <input placeholder="Email">
+            </div>
+            <div class="col align-self-center">
+                <input placeholder="Name">
+            </div>
+            <div class="col align-self-center">
+                <textarea placeholder="Whats your message?" id="message-box" rows="5" cols="33"></textarea>
+            </div>
+            <div class="col align-self-center" >
+                <button title="submit" type="submit">
+            </div>
+        </div>
+    </div>
     
 </body>
 </html>
