@@ -55,12 +55,6 @@ p {
     margin-top:50px;
     transition: background-color 0.3s ease-in-out;
 }
-.item:hover {
-    
-    background-color: rgb(234, 255, 244);
-    cursor: pointer;
-    text-decoration:    none;
-}
 
 .center-block {
     display: block;
