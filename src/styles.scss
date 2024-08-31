@@ -13,13 +13,16 @@ $accent: #1e1a1d;
 $pastel-violet: #9695ff;
 $pastel-pink: #fe97ff;
 
+$background: #6b679a;
+$dots: #4c4e72;
+
 html, body { 
   height: 100%;   
-  background-image: 
-    radial-gradient($pastel-violet 30%, transparent 22.8%),
-    radial-gradient($pastel-pink 22.8%, transparent 22.8%);
-  background-position: 0px 0px, 204px 204px;
-  background-size: 1vh 1vh;
+  // background-image: 
+  //   radial-gradient($dots 22.8%, transparent 22.8%);
+  // background-position: 0px 0px, 0px 100px;
+  // background-size: 50px 50px;
+  background-color: $background;
 }
 
 
@@ -46,7 +49,7 @@ html, body {
 .glass-card {
   @include mat.elevation(4);
   @apply rounded-xl;
-  background: rgba( 255, 255, 255, 0.45 ); 
+  background: rgba(255, 255, 255, 0.712); 
   backdrop-filter: blur( 4px );
   -webkit-backdrop-filter: blur( 4px );
   border: 1px solid rgba( 255, 255, 255, 0.18 );
