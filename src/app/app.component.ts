@@ -1,14 +1,13 @@
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { provideRouter, RouterOutlet } from '@angular/router';
 import {FlexLayoutModule} from "@angular/flex-layout";
 import { NavBarModule } from './nav-bar/nav-bar.module';
-import { NzButtonModule } from 'ng-zorro-antd/button';
-
+import { routes } from './app.routes';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports:[FlexLayoutModule, RouterOutlet, NavBarModule, NzButtonModule],
+  imports:[FlexLayoutModule,RouterOutlet, NavBarModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
