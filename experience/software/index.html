@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Coin flip</title>
+    <style>
+    /* body {
+        margin-left:auto;
+        margin-right:auto;
+        text-align:center;
+    }
+    canvas {
+        
+        width:50%;
+        height:auto;
+        border:solid black 10px;
+    }
+    button {
+        position: relative;
+        width:50%;
+        height:auto;
+        font-size:25px;
+ } */
+    </style>
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+<!-- <link rel="stylesheet" href="/style.css"> -->
+<link rel="stylesheet" href="flipstyle.css">
+
+</head>
+
+<body>
+
+
+    <div class="container text-center">
+    <canvas></canvas>
+    <script src = "experiment.js"></script>
+    <h1 id = "flipNumber"></h1><h1 id = "heads or tails counter"></h1>
+    <button type="button" value="FLIP" onclick="coinFlip()">Click to flip</button>
+    <button type="button" value="auto" onclick="auto()">Click to automaticly flip</button>
+    </div class="row">
+    <a href="software.html"><h3 class="text-center" style="margin-top: 10px;">Click Here to go back to the main site</a></h3>
+    <h3 class="text-center" style="margin-top: 10px;">This simply flips a 'coin' and records its results</h3>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/js/bootstrap.min.js" integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous"></script>
+</body>
+</html>
