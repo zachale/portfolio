@@ -13,15 +13,11 @@ $accent: #1e1a1d;
 $pastel-violet: #9695ff;
 $pastel-pink: #fe97ff;
 
-$background: #6b679a;
+$background: #f0e7d8;
 $dots: #4c4e72;
 
 html, body { 
   height: 100%;   
-  // background-image: 
-  //   radial-gradient($dots 22.8%, transparent 22.8%);
-  // background-position: 0px 0px, 0px 100px;
-  // background-size: 50px 50px;
   background-color: $background;
 }
 
@@ -54,6 +50,11 @@ html, body {
   -webkit-backdrop-filter: blur( 4px );
   border: 1px solid rgba( 255, 255, 255, 0.18 );
   transition: all ease-in-out 0.4s;
+}
+
+.glass-nav-bar {
+  @extend .glass-card;
+  @include mat.elevation(8);
 }
 
 .glass-card:hover {
