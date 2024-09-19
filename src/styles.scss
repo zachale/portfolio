@@ -1,7 +1,6 @@
-@use '@angular/material' as mat;
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
-
+@use "@angular/material" as mat;
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -12,43 +11,46 @@ $accent: #1e1a1d;
 
 $pastel-violet: #9695ff;
 $pastel-pink: #fe97ff;
+$pastel-pink-hover: #fecdff;
+
+$button-background: #14080e;
+
+$timeline-label: #52489c;
 
 $background: #f0e7d8;
 $dots: #4c4e72;
 
-html, body { 
-  height: 100%;   
+html,
+body {
+  height: 100%;
   background-color: $background;
 }
 
-
-
-.background-accent{
+.background-accent {
   background-color: $accent;
 }
 
-.text-accent{
-  color:$accent;
+.text-accent {
+  color: $accent;
 }
 
-.text-primary{
-  color:$primary
+.text-primary {
+  color: $primary;
 }
 
-.text-gradient{
-  background: linear-gradient( to right, $pastel-pink,$pastel-violet);
+.text-gradient {
+  background: linear-gradient(to right, $pastel-pink, $pastel-violet);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-
 .glass-card {
   @include mat.elevation(4);
   @apply rounded-xl;
-  background: rgba(255, 255, 255, 0.712); 
-  backdrop-filter: blur( 4px );
-  -webkit-backdrop-filter: blur( 4px );
-  border: 1px solid rgba( 255, 255, 255, 0.18 );
+  background: rgba(255, 255, 255, 0.712);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   transition: all ease-in-out 0.4s;
 }
 
@@ -58,19 +60,55 @@ html, body {
 }
 
 .glass-card:hover {
-  @include mat.elevation(16);
+  @include mat.elevation(10);
 }
 
-.text-body{
+.text-body {
   @apply font-medium;
   font-family: "Poppins", sans-serif;
   font-style: normal;
 }
 
-.text-title{
+.text-title {
   @apply font-bold;
   font-family: "Outfit", sans-serif;
   font-optical-sizing: auto;
   font-size: 32px;
   font-style: normal;
+}
+
+.nav-link {
+  @apply rounded-xl;
+  @include mat.elevation(4);
+  width: 50px;
+  height: 50px;
+  color: $pastel-pink-hover;
+  background-color: $button-background;
+  transition: all ease-in-out 0.2s;
+}
+.nav-link:hover {
+  @apply scale-105;
+  color: $pastel-pink;
+  @include mat.elevation(8);
+}
+
+.project {
+  width: 700px;
+  max-width: 100%;
+}
+
+// TODO: remove this work around
+
+.mat-mdc-chip-action-label {
+  color: #14080e !important;
+}
+
+.icon {
+  width: 50px;
+  height: 50px;
+}
+
+.icon-small {
+  width: 40px;
+  height: 40px;
 }

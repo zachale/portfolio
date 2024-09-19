@@ -1,15 +1,16 @@
 import { Component } from '@angular/core';
 import { provideRouter, RouterOutlet } from '@angular/router';
-import {FlexLayoutModule} from "@angular/flex-layout";
+import { FlexLayoutModule } from '@angular/flex-layout';
 import { NavBarModule } from './nav-bar/nav-bar.module';
 import { routes } from './app.routes';
+import { FooterModule } from './footer/footer.module';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports:[FlexLayoutModule,RouterOutlet, NavBarModule],
+  imports: [FlexLayoutModule, RouterOutlet, NavBarModule, FooterModule],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.scss'
+  styleUrl: './app.component.scss',
 })
 export class AppComponent {
   title = 'portfolio-site';

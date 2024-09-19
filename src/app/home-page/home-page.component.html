@@ -1,10 +1,104 @@
-<div>
-  <div class="glass-card mt-8 p-8">
-    <div class="text-title mb-4">
-      Welcome! 
+<div fxLayout="column" fxLayoutGap="32px" fxLayoutAlign="center center">
+  <div class="project glass-card p-8 mt-8 mx-2">
+    <div class="text-title mb-4">Projects</div>
+  </div>
+  <div class="glass-card project p-4">
+    <div fxLayoutAlign="space-between center" class="mb-8">
+      <div fxLayout="column" fxLayoutAlign="space-between start">
+        <div class="text-title">Imaginate</div>
+        <div class="mt-1">
+          <span class="mr-1" nz-icon nzType="link" nzTheme="outline"></span>
+          <a href="https://github.com/imaginate-ai" target="_blank"
+            >repository</a
+          >
+        </div>
+      </div>
+      <img
+        class="rounded-xl mat-elevation-z4 icon"
+        src="/assets/imaginate/logo.png"
+      />
     </div>
-    <div class="text-body ml-4">
-      This site is under construction. Please check out my team project <a class='underline' href='https://playimaginate.com/' target='_blank'>Imaginate</a>, or you can find my LinkedIn or GitHub in the top right.
+    <div class="text-body mb-4">
+      A daily game that teaches users to identify AI generated content
     </div>
+    <mat-chip-set>
+      <mat-chip>Python</mat-chip>
+      <mat-chip>Typescript</mat-chip>
+      <mat-chip>Flask</mat-chip>
+      <mat-chip>React</mat-chip>
+      <mat-chip>MongoDB</mat-chip>
+      <mat-chip>AWS Lambda</mat-chip>
+      <mat-chip>Stable Diffusion</mat-chip>
+    </mat-chip-set>
+  </div>
+  <div class="glass-card project p-4">
+    <div fxLayoutAlign="space-between center" class="mb-8">
+      <div fxLayout="column" fxLayoutAlign="space-between start">
+        <div class="text-title">Pixy</div>
+        <div class="mt-1">
+          <span class="mr-1" nz-icon nzType="link" nzTheme="outline"></span>
+          <a href="https://github.com/zachale/pixy" target="_blank"
+            >repository</a
+          >
+        </div>
+      </div>
+      <div
+        class="icon mat-elevation-z4 rounded-xl border-2 border-blue-400"
+        fxLayoutAlign="center center"
+      >
+        <span nz-icon class="text-3xl" nzType="camera" nzTheme="twotone"></span>
+      </div>
+    </div>
+    <div class="text-body mb-4">
+      A secure cloud based photo storage application, complete with user
+      athentication
+    </div>
+    <mat-chip-set>
+      <mat-chip>MongoDB</mat-chip>
+      <mat-chip>Express</mat-chip>
+      <mat-chip>Angular</mat-chip>
+      <mat-chip>Node</mat-chip>
+      <mat-chip>JWT</mat-chip>
+    </mat-chip-set>
+  </div>
+  <div class="glass-card project p-4">
+    <div fxLayoutAlign="space-between center" class="mb-8">
+      <div fxLayout="column" fxLayoutAlign="space-between start">
+        <div class="text-title">2D Neural Network</div>
+        <div class="mt-1">
+          <span class="mr-1" nz-icon nzType="link" nzTheme="outline"></span>
+          <a
+            href="https://github.com/zachale/neural-network-from-scratch"
+            target="_blank"
+            >repository</a
+          >
+        </div>
+      </div>
+      <div
+        class="h-14 p-2 mat-elevation-z4 rounded-xl border-2 border-gray-500 relative"
+        fxLayoutAlign="center center"
+      >
+        <img
+          class="rounded-lg icon-small"
+          src="/assets/neural-network/base.png"
+        />
+        <span nz-icon nzType="arrow-right" nzTheme="outline"></span>
+        <img
+          class="rounded-lg icon-small"
+          src="/assets/neural-network/learning.gif"
+        />
+        <p class="absolute -top-5 font-bold z-10">Learning</p>
+      </div>
+    </div>
+    <div class="text-body mb-4">
+      An efficient machine learning algorithm built from independent research
+    </div>
+    <mat-chip-set>
+      <mat-chip>Python</mat-chip>
+      <mat-chip>Numpy</mat-chip>
+      <mat-chip>Algorithms</mat-chip>
+      <mat-chip>Gradient Descent</mat-chip>
+      <mat-chip>Machine Learning</mat-chip>
+    </mat-chip-set>
   </div>
 </div>
