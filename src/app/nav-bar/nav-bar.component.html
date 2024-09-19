@@ -1,13 +1,36 @@
-<div fxLayout="row" class="glass-nav-bar p-6" fxLayoutAlign="space-between center">
-    <div class="text-gradient text-title text-2xl" >
-      Hey, I'm Zach
-    </div>
-    <div fxLayout="row" fxLayoutGap="8px">
-      <a href="https://github.com/zachale"  mat-raised-button>
-        <span class="text-2xl" nz-icon nzType="github" nzTheme="outline"></span>
+<div
+  fxLayout="row"
+  class="glass-nav-bar p-6"
+  fxLayoutAlign="space-between center"
+>
+  <div class="text-gradient text-title text-2xl">Hey, I'm Zach</div>
+  <div fxLayoutAlign="end center" fxLayoutGap="8px">
+    <a
+      fxLayoutAlign="center center"
+      class="nav-link"
+      href="https://github.com/zachale"
+      target="_blank"
+    >
+      <span class="text-2xl" nz-icon nzType="github" nzTheme="outline"></span>
+    </a>
+    <a
+      fxLayout="row"
+      fxLayoutAlign="center center"
+      class="nav-link"
+      href="https://linkedin.com/in/zach-legesse"
+      target="_blank"
+    >
+      <span class="text-2xl" nz-icon nzType="linkedin" nzTheme="fill"></span>
+    </a>
+    <div class="relative">
+      <a href="https://playimaginate.com/?source=zach" target="_blank"
+        ><img class="nav-link" src="/assets/imaginate/logo.png" />
       </a>
-      <a href="https://linkedin.com/in/zach-legesse"  mat-raised-button>
-        <span class="text-2xl" nz-icon nzType="linkedin" nzTheme="outline"></span>
-      </a>
+      <img
+        class="absolute -bottom-2 -right-2"
+        width="24px"
+        src="/assets/imaginate/sparkles.png"
+      />
     </div>
+  </div>
 </div>
