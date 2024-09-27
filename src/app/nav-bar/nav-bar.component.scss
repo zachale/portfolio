@@ -1,0 +1,22 @@
+.sparkle {
+  animation: icon-wiggle 3s infinite ease-in-out;
+  transform: rotate(0);
+}
+
+@keyframes icon-wiggle {
+  0% {
+    transform: rotate(20deg);
+  }
+  25% {
+    transform: rotate(0);
+  }
+  50% {
+    transform: rotate(-20deg);
+  }
+  75% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(20deg);
+  }
+}

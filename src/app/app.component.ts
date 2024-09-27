@@ -1,8 +1,7 @@
 import { Component } from '@angular/core';
-import { provideRouter, RouterOutlet } from '@angular/router';
+import { RouterOutlet } from '@angular/router';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { NavBarModule } from './nav-bar/nav-bar.module';
-import { routes } from './app.routes';
 import { FooterModule } from './footer/footer.module';
 
 @Component({

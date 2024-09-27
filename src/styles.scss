@@ -15,9 +15,7 @@ $pastel-pink-hover: #fecdff;
 
 $button-background: #14080e;
 
-$timeline-label: #52489c;
-
-$background: #f0e7d8;
+$background: #f4f5ff;
 $dots: #4c4e72;
 
 html,
@@ -53,7 +51,6 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.18);
   transition: all ease-in-out 0.4s;
 }
-
 .glass-nav-bar {
   @extend .glass-card;
   @include mat.elevation(8);
@@ -61,6 +58,18 @@ body {
 
 .glass-card:hover {
   @include mat.elevation(10);
+}
+
+.glass-chat {
+  @extend .glass-card;
+  @apply rounded-3xl;
+  @apply rounded-bl-md;
+  @apply mb-4;
+  @include mat.elevation(4);
+}
+
+.glass-chat:hover {
+  @include mat.elevation(4);
 }
 
 .text-body {
@@ -93,15 +102,11 @@ body {
 }
 
 .project {
-  width: 700px;
-  max-width: 100%;
+  max-width: 700px;
+  width: 100%;
 }
 
 // TODO: remove this work around
-
-.mat-mdc-chip-action-label {
-  color: #14080e !important;
-}
 
 .icon {
   width: 50px;
@@ -111,4 +116,11 @@ body {
 .icon-small {
   width: 40px;
   height: 40px;
+}
+
+.text-skill {
+  @apply font-normal;
+  @apply text-sm;
+  font-family: "Poppins", sans-serif;
+  font-style: normal;
 }

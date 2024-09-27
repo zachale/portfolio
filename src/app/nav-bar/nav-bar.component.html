@@ -3,12 +3,14 @@
   class="glass-nav-bar p-6"
   fxLayoutAlign="space-between center"
 >
-  <div class="text-gradient text-title text-2xl">Hey, I'm Zach</div>
-  <div fxLayoutAlign="end center" fxLayoutGap="8px">
+  <div class="text-gradient text-title text-2xl mr-2">
+    {{ innerWidth > 992 ? "Hey, I'm Zach" : "Hey!" }}
+  </div>
+  <div fxLayout="row" fxLayoutGap="8px" fxLayoutAlign="end center">
     <a
       fxLayoutAlign="center center"
-      class="nav-link"
       href="https://github.com/zachale"
+      class="nav-link"
       target="_blank"
     >
       <span class="text-2xl" nz-icon nzType="github" nzTheme="outline"></span>
@@ -22,15 +24,21 @@
     >
       <span class="text-2xl" nz-icon nzType="linkedin" nzTheme="fill"></span>
     </a>
-    <div class="relative">
-      <a href="https://playimaginate.com/?source=zach" target="_blank"
-        ><img class="nav-link" src="/assets/imaginate/logo.png" />
-      </a>
-      <img
-        class="absolute -bottom-2 -right-2"
-        width="24px"
-        src="/assets/imaginate/sparkles.png"
-      />
+    <div class="nav-link bg-black h-full">
+      <div class="relative h-full">
+        <a href="https://playimaginate.com/?source=zach" target="_blank"
+          ><img
+            style="max-width: 50px"
+            width="100%"
+            src="/assets/imaginate/logo.png"
+          />
+        </a>
+        <img
+          class="absolute -bottom-2 -right-2 sparkle"
+          width="24px"
+          src="/assets/imaginate/sparkles.png"
+        />
+      </div>
     </div>
   </div>
 </div>

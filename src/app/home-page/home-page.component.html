@@ -1,80 +1,109 @@
-<div fxLayout="column" fxLayoutGap="32px" fxLayoutAlign="center center">
-  <div class="project glass-card p-8 mt-8 mx-2">
-    <div class="text-title mb-4">Projects</div>
-  </div>
-  <div class="glass-card project p-4">
-    <div fxLayoutAlign="space-between center" class="mb-8">
-      <div fxLayout="column" fxLayoutAlign="space-between start">
-        <div class="text-title">Imaginate</div>
-        <div class="mt-1">
-          <span class="mr-1" nz-icon nzType="link" nzTheme="outline"></span>
-          <a href="https://github.com/imaginate-ai" target="_blank"
-            >repository</a
-          >
+<div
+  class="mt-4"
+  fxLayout="column"
+  fxLayoutGap="16px"
+  fxLayoutAlign="center center"
+>
+  <div
+    fxLayoutAlign="center end"
+    fxLayout="row"
+    class="w-full"
+    fxLayoutGap="16px"
+  >
+    <img
+      class="max-h-16"
+      style="border-radius: 64px"
+      src="/assets/personal/pfp.jpg"
+    />
+    <div class="w-full h-full" fxLayout="column">
+      <div class="glass-chat p-8">
+        <div class="text-body">
+          Thanks for stopping by! I'm a computer science student driven by
+          impactful product and incredible people. I also happen to love going
+          on bike rides 🚲 and ant keeping 🐜.
         </div>
+        <div></div>
       </div>
+    </div>
+  </div>
+  <div fxLayout="column" fxLayoutGap="16px">
+    <div class="project">
+      <nz-divider [nzText]="projects"></nz-divider>
+      <ng-template #projects>
+        <div class="text-title">Projects</div>
+      </ng-template>
+    </div>
+    <div class="text-base">🚀= product in progress</div>
+    <app-project-tile
+      name="Imaginate"
+      repositoryLink="https://github.com/imaginate-ai"
+      [logo]="imaginateLogo"
+      body="A daily game that teaches users to identify AI generated content"
+      [skills]="[
+        'Python',
+        'Typescript',
+        'Flask',
+        'React',
+        'MongoDB',
+        'AWS Lambda',
+        'Stable Diffusion',
+      ]"
+    />
+    <ng-template #imaginateLogo>
       <img
         class="rounded-xl mat-elevation-z4 icon"
         src="/assets/imaginate/logo.png"
       />
-    </div>
-    <div class="text-body mb-4">
-      A daily game that teaches users to identify AI generated content
-    </div>
-    <mat-chip-set>
-      <mat-chip>Python</mat-chip>
-      <mat-chip>Typescript</mat-chip>
-      <mat-chip>Flask</mat-chip>
-      <mat-chip>React</mat-chip>
-      <mat-chip>MongoDB</mat-chip>
-      <mat-chip>AWS Lambda</mat-chip>
-      <mat-chip>Stable Diffusion</mat-chip>
-    </mat-chip-set>
-  </div>
-  <div class="glass-card project p-4">
-    <div fxLayoutAlign="space-between center" class="mb-8">
-      <div fxLayout="column" fxLayoutAlign="space-between start">
-        <div class="text-title">Pixy</div>
-        <div class="mt-1">
-          <span class="mr-1" nz-icon nzType="link" nzTheme="outline"></span>
-          <a href="https://github.com/zachale/pixy" target="_blank"
-            >repository</a
-          >
-        </div>
-      </div>
+    </ng-template>
+
+    <app-project-tile
+      name="IOT Solar Tracker"
+      repositoryLink="https://github.com/zachale/solar-tracker"
+      [logo]="solarTrackerLogo"
+      body="An internet connected solar tracker that will communicate sensor data with an online dashboard"
+      [skills]="['C++', 'Electronics']"
+      [skillsWip]="['Ruby on Rails', 'React', 'MySQL', 'Vercel']"
+    />
+    <ng-template #solarTrackerLogo>
+      <img
+        class="rounded-xl mat-elevation-z4 icon"
+        src="/assets/solar-tracker/logo.png"
+      />
+    </ng-template>
+
+    <app-project-tile
+      name="Thunder Resume"
+      repositoryLink="https://github.com/zachale/thunder"
+      [logo]="thunderLogo"
+      body="LLM powered resume tools that will help you nail your next job application"
+      [skills]="['Django', 'PostgreSQL', 'LLM Integration']"
+      [skillsWip]="['Angular', 'AWS']"
+    />
+    <ng-template #thunderLogo>
       <div
-        class="icon mat-elevation-z4 rounded-xl border-2 border-blue-400"
+        class="icon mat-elevation-z4 rounded-xl border-2 border-slate-800"
         fxLayoutAlign="center center"
       >
-        <span nz-icon class="text-3xl" nzType="camera" nzTheme="twotone"></span>
+        <div class="text-3xl">⚡</div>
       </div>
-    </div>
-    <div class="text-body mb-4">
-      A secure cloud based photo storage application, complete with user
-      authentication
-    </div>
-    <mat-chip-set>
-      <mat-chip>MongoDB</mat-chip>
-      <mat-chip>Express</mat-chip>
-      <mat-chip>Angular</mat-chip>
-      <mat-chip>Node</mat-chip>
-      <mat-chip>JWT</mat-chip>
-    </mat-chip-set>
-  </div>
-  <div class="glass-card project p-4">
-    <div fxLayoutAlign="space-between center" class="mb-8">
-      <div fxLayout="column" fxLayoutAlign="space-between start">
-        <div class="text-title">2D Neural Network</div>
-        <div class="mt-1">
-          <span class="mr-1" nz-icon nzType="link" nzTheme="outline"></span>
-          <a
-            href="https://github.com/zachale/neural-network-from-scratch"
-            target="_blank"
-            >repository</a
-          >
-        </div>
-      </div>
-      <div
+    </ng-template>
+
+    <app-project-tile
+      name="Neural Network"
+      repositoryLink="https://github.com/zachale/neural-network-from-scratch"
+      [logo]="neuralLogo"
+      body="An efficient machine learning algorithm built from independent research
+    "
+      [skills]="[
+        'Python',
+        'Numpy',
+        'Algorithms',
+        'Gradient Descent',
+        'Machine Learning',
+      ]"
+    />
+    <ng-template #neuralLogo
+      ><div
         class="h-14 p-2 mat-elevation-z4 rounded-xl border-2 border-gray-500 relative"
         fxLayoutAlign="center center"
       >
@@ -88,17 +117,27 @@
           src="/assets/neural-network/learning.gif"
         />
         <p class="absolute -top-5 font-bold z-10">Learning</p>
-      </div>
-    </div>
-    <div class="text-body mb-4">
-      An efficient machine learning algorithm built from independent research
-    </div>
-    <mat-chip-set>
-      <mat-chip>Python</mat-chip>
-      <mat-chip>Numpy</mat-chip>
-      <mat-chip>Algorithms</mat-chip>
-      <mat-chip>Gradient Descent</mat-chip>
-      <mat-chip>Machine Learning</mat-chip>
-    </mat-chip-set>
+      </div></ng-template
+    >
+    <app-project-tile
+      name="Pixy"
+      repositoryLink="https://github.com/zachale/pixy"
+      [logo]="pixyLogo"
+      body="A secure cloud based photo storage application, complete with user
+    authentication"
+      [skills]="['MongoDB', 'Express', 'Angular', 'NodeJS', 'Json Web Tokens']"
+    />
+    <ng-template #pixyLogo
+      ><div
+        class="icon mat-elevation-z4 rounded-xl border-2 border-blue-400"
+        fxLayoutAlign="center center"
+      >
+        <span
+          nz-icon
+          class="text-3xl"
+          nzType="camera"
+          nzTheme="twotone"
+        ></span></div
+    ></ng-template>
   </div>
 </div>

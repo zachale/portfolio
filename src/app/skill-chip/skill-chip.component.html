@@ -1,0 +1,20 @@
+<div
+  fxLayoutAlign="center center"
+  [class]="
+    [
+      'border-2',
+      'rounded-xl',
+      'p-2',
+      'mr-2',
+      'mb-2',
+      'bg-white',
+      'text-skill',
+    ].concat(
+      dashed
+        ? ['border-dashed', 'border-gray-400', 'color-gray-600']
+        : ['border-gray-800']
+    )
+  "
+>
+  {{ message }}
+</div>
