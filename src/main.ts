@@ -9,5 +9,5 @@ bootstrapApplication(AppComponent, appConfig).catch((err) =>
 
 posthog.init('phc_jP728LsaPTymnxkXfXgM0YBR93LcNtL2KmLiyoUfSVS', {
   api_host: 'https://us.i.posthog.com',
-  person_profiles: 'identified_only', // or 'always' to create profiles for anonymous users as well
+  person_profiles: 'always',
 });
