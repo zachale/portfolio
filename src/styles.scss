@@ -42,14 +42,18 @@ body {
   -webkit-text-fill-color: transparent;
 }
 
-.glass-card {
-  @include mat.elevation(4);
-  @apply rounded-xl;
+.glass-texture {
   background: rgba(255, 255, 255, 0.712);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 255, 255, 0.18);
-  transition: all ease-in-out 0.4s;
+}
+
+.glass-card {
+  @extend .glass-texture;
+  @include mat.elevation(4);
+  @apply rounded-xl;
+  transition: all ease-in-out 0.2s;
 }
 .glass-nav-bar {
   @extend .glass-card;
@@ -61,15 +65,34 @@ body {
 }
 
 .glass-chat {
-  @extend .glass-card;
+  @extend .glass-texture;
   @apply rounded-3xl;
   @apply rounded-bl-md;
-  @apply mb-4;
+  @apply mb-4 mr-4;
   @include mat.elevation(4);
+  max-width: 800px;
+  width: 100%;
 }
 
-.glass-chat:hover {
+.glass-reply {
+  @extend .glass-texture;
+  @apply rounded-3xl;
+  @apply rounded-br-md;
+  @apply p-4;
+  background: rgba(255, 255, 255, 0.779);
+}
+
+.glass-reply-border {
+  @extend .special-button;
+  @apply rounded-br-md;
   @include mat.elevation(4);
+  transition: padding 0.1s ease-out;
+  border-radius: 25px 25px 6px 25px;
+}
+
+.glass-reply-border:hover {
+  cursor: pointer;
+  padding: 2px;
 }
 
 .text-body {
@@ -106,8 +129,6 @@ body {
   width: 100%;
 }
 
-// TODO: remove this work around
-
 .icon {
   width: 50px;
   height: 50px;
@@ -123,4 +144,37 @@ body {
   @apply text-sm;
   font-family: "Poppins", sans-serif;
   font-style: normal;
+}
+
+.special-button {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.9);
+  background: linear-gradient(
+    -45deg,
+    #ffb056,
+    #ffc1d4,
+    #74b0ff,
+    #5ffdd8,
+    #ffb056,
+    #ffc1d4
+  );
+  background-size: 600%;
+  -webkit-animation: animate 5s linear infinite;
+  animation: animate 5s linear infinite;
+}
+@-webkit-keyframes animate {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+@keyframes animate {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
 }
