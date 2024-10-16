@@ -24,7 +24,7 @@
         [style.height]="'60px'"
       >
         <div class="glass-reply-border">
-          <a href="mailto:zachlegesse@gmail.com">
+          <button (click)="click()">
             <div class="glass-reply p-8">
               <div class="text-body text-black">
                 Contact me
@@ -36,10 +36,11 @@
                 ></span>
               </div>
             </div>
-          </a>
+          </button>
         </div>
       </div>
     </div>
+    {{ err }}
   </div>
   <div class="project">
     <nz-divider [nzText]="projects"></nz-divider>
