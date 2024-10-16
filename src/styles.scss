@@ -86,12 +86,14 @@ body {
   @extend .special-button;
   @apply rounded-br-md;
   @include mat.elevation(4);
-  transition: padding 0.1s ease-out;
+  transition: all 0.4s cubic-bezier(1, 0, 0, 1);
   border-radius: 25px 25px 6px 25px;
 }
 
 .glass-reply-border:hover {
   cursor: pointer;
+  @include mat.elevation(6);
+  @apply scale-105;
   padding: 2px;
 }
 

@@ -1,12 +1,7 @@
-<div
-  class="mt-4"
-  fxLayout="column"
-  fxLayoutGap="16px"
-  fxLayoutAlign="center center"
->
-  <div class="py-12 w-full">
+<div fxLayout="column" fxLayoutAlign="center center">
+  <div class="pt-8 pb-4 w-full" [style.maxWidth]="'992px'">
     <div
-      fxLayoutAlign="center end"
+      fxLayoutAlign="start end"
       fxLayout="row"
       class="w-full"
       fxLayoutGap="16px"
@@ -16,10 +11,10 @@
         style="border-radius: 64px"
         src="/assets/personal/pfp.jpg"
       />
-      <div class="glass-chat text-body p-8">
+      <div class="glass-chat text-body p-4">
         Thanks for stopping by! I'm a computer science student driven by
         impactful product and incredible people. I also happen to love going on
-        bike rides 🚲 and ant keeping 🐜.
+        bike rides on local trails and ant keeping 🚲🐜
       </div>
     </div>
     <div class="w-full h-full" fxLayout="row" fxLayoutAlign="end end">
@@ -46,13 +41,13 @@
       </div>
     </div>
   </div>
+  <div class="project">
+    <nz-divider [nzText]="projects"></nz-divider>
+    <ng-template #projects>
+      <div class="text-title">Projects</div>
+    </ng-template>
+  </div>
   <div fxLayout="column" fxLayoutGap="16px">
-    <div class="project">
-      <nz-divider [nzText]="projects"></nz-divider>
-      <ng-template #projects>
-        <div class="text-title">Projects</div>
-      </ng-template>
-    </div>
     <div class="text-base">🚀= product in progress</div>
     <app-project-tile
       name="Imaginate"
