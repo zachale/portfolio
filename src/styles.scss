@@ -60,10 +60,6 @@ body {
   @include mat.elevation(8);
 }
 
-.glass-card:hover {
-  @include mat.elevation(10);
-}
-
 .glass-chat {
   @extend .glass-texture;
   @apply rounded-3xl;
@@ -99,6 +95,7 @@ body {
 
 .text-body {
   @apply font-medium;
+  font-size: 16px;
   font-family: "Poppins", sans-serif;
   font-style: normal;
 }
@@ -109,21 +106,35 @@ body {
   font-optical-sizing: auto;
   font-size: 32px;
   font-style: normal;
+  line-height: normal;
+}
+
+.header {
+  width: 100%;
+  height: 60svh;
+}
+
+.text-header {
+  @extend .text-title;
+  font-size: 64px;
+}
+
+.text-sub-header {
+  @extend .text-body;
+  @apply font-medium;
+  font-size: 24px;
 }
 
 .nav-link {
-  @apply rounded-xl;
-  @include mat.elevation(4);
-  width: 50px;
-  height: 50px;
-  color: $pastel-pink-hover;
-  background-color: $button-background;
+  width: 48px;
+  height: 48px;
+  color: black;
   transition: all ease-in-out 0.2s;
 }
+
 .nav-link:hover {
-  @apply scale-105;
-  color: $pastel-pink;
-  @include mat.elevation(8);
+  @apply scale-110;
+  color: black;
 }
 
 .project {
@@ -149,21 +160,32 @@ body {
 }
 
 .special-button {
+  @apply rounded-2xl;
+  @include mat.elevation(2);
+  @apply p-2;
+  @extend .glass-texture;
+  height: 48px;
   text-align: center;
   color: rgba(255, 255, 255, 0.9);
   background: linear-gradient(
     -45deg,
-    #ffb056,
-    #ffc1d4,
-    #74b0ff,
-    #5ffdd8,
-    #ffb056,
-    #ffc1d4
+    #ffe7cc,
+    #ffdde7,
+    #c6dfff,
+    #c4fff1,
+    #ffe7cc,
+    #ffdde7
   );
   background-size: 600%;
   -webkit-animation: animate 5s linear infinite;
   animation: animate 5s linear infinite;
+  transition: all 0.1s ease-in-out;
 }
+
+.special-button:hover {
+  @include mat.elevation(4);
+}
+
 @-webkit-keyframes animate {
   0% {
     background-position: 0% 50%;

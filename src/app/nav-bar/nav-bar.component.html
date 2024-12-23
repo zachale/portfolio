@@ -3,17 +3,17 @@
   class="glass-nav-bar p-4"
   fxLayoutAlign="space-between center"
 >
-  <div class="text-gradient text-title text-2xl mr-2">
-    {{ innerWidth > 992 ? "Hey, I'm Zach" : "Hey!" }}
-  </div>
-  <div fxLayout="row" fxLayoutGap="8px" fxLayoutAlign="end center">
+  <a (click)="navigateTo('/')">
+    <img class="max-h-12 rounded-full" src="/assets/personal/pfp.jpg" />
+  </a>
+  <div fxLayout="row" fxLayoutGap="4px" fxLayoutAlign="end center">
     <a
       fxLayoutAlign="center center"
       href="https://github.com/zachale"
       class="nav-link"
       target="_blank"
     >
-      <span class="text-2xl" nz-icon nzType="github" nzTheme="outline"></span>
+      <span class="text-4xl" nz-icon nzType="github" nzTheme="outline"></span>
     </a>
     <a
       fxLayout="row"
@@ -22,15 +22,15 @@
       href="https://linkedin.com/in/zach-legesse"
       target="_blank"
     >
-      <span class="text-2xl" nz-icon nzType="linkedin" nzTheme="fill"></span>
+      <span class="text-4xl" nz-icon nzType="linkedin" nzTheme="fill"></span>
     </a>
-    <div class="nav-link bg-black h-full">
+    <div class="nav-link h-full">
       <div class="relative h-full">
         <a href="https://playimaginate.com/?source=zach" target="_blank"
           ><img
             style="max-width: 50px"
             width="100%"
-            src="/assets/imaginate/logo.png"
+            src="/assets/imaginate/imaginate-beaker-solo.png"
           />
         </a>
         <img
