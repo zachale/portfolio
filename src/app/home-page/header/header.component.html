@@ -1,0 +1,29 @@
+<div
+  class="pt-8 pb-4 w-full header"
+  [style.maxWidth]="'992px'"
+  fxLayout="column"
+  fxLayoutAlign="center center"
+  fxLayoutGap="16px"
+>
+  <div class="mb-4">
+    <div class="text-gradient text-header text-5xl mr-2">Hey, I'm Zach</div>
+    <div class="text-sub-header">Product + software fanatic</div>
+  </div>
+  <div fxLayoutAlign="start start">
+    <button (click)="copyEmail()" class="special-button">
+      <div
+        class="text-black text-body"
+        fxLayoutAlign="center center"
+        fxLayoutGap="8px"
+      >
+        @if (emailCopied) {
+          <div>Copied</div>
+          <mat-icon class="material-symbols-outlined"> check </mat-icon>
+        } @else {
+          <div>Copy Email</div>
+          <mat-icon class="material-symbols-outlined"> content_copy </mat-icon>
+        }
+      </div>
+    </button>
+  </div>
+</div>

@@ -1,12 +1,13 @@
-import { NgModule } from '@angular/core';
-import { HomePage } from './home-page.component';
-import { FlexLayoutModule } from '@angular/flex-layout';
-import { RouterModule } from '@angular/router';
-import { MatChipsModule } from '@angular/material/chips';
-import { NzIconModule } from 'ng-zorro-antd/icon';
-import { ProjectTileModule } from '../tiles/project-tile.module';
-import { SkillChipModule } from '../skill-chip/skill-chip.module';
-import { NzDividerModule } from 'ng-zorro-antd/divider';
+import { NgModule } from "@angular/core";
+import { HomePage } from "./home-page.component";
+import { FlexLayoutModule } from "@angular/flex-layout";
+import { RouterModule } from "@angular/router";
+import { MatChipsModule } from "@angular/material/chips";
+import { NzIconModule } from "ng-zorro-antd/icon";
+import { ProjectTileModule } from "./tiles/project-tile.module";
+import { SkillChipModule } from "./skill-chip/skill-chip.module";
+import { NzDividerModule } from "ng-zorro-antd/divider";
+import { HeaderModule } from "./header/header.module";
 
 @NgModule({
   declarations: [HomePage],
@@ -16,8 +17,9 @@ import { NzDividerModule } from 'ng-zorro-antd/divider';
     FlexLayoutModule,
     MatChipsModule,
     NzIconModule,
-    RouterModule.forChild([{ path: '', component: HomePage }]),
+    RouterModule.forChild([{ path: "", component: HomePage }]),
     ProjectTileModule,
+    HeaderModule,
   ],
   exports: [HomePage],
 })
