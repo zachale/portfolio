@@ -21,7 +21,7 @@ export class NavBar {
         behavior: "smooth",
       });
     } else {
-      this.location.replaceState(route);
+      this.router.navigateByUrl(route);
     }
   }
 }
