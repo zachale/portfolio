@@ -1,36 +1,36 @@
-<div class="glass-card project p-4">
-  <div
-    [fxLayoutAlign]="logo ? 'space-between center' : 'start center'"
-    class="mb-8"
-  >
-    <div fxLayout="column" fxLayoutAlign="space-between start">
-      <div fxLayout="row" class="text-title">
-        {{ name }}
-      </div>
-      @if (repositoryLink) {
-        <div fxLayout="row" class="mt-1">
-          @if (skillsWip) {
-            <div class="text-base">🚀</div>
-          } @else {
-            <span class="mr-1" nz-icon nzType="link" nzTheme="outline"></span>
-          }
-          <a [href]="repositoryLink" target="_blank">repository</a>
+<div class="glass-card project p-4" fxLayoutAlign="start start">
+  <div #tileContent>
+    <div
+      [fxLayoutAlign]="logo ? 'space-between center' : 'start center'"
+      class="mb-8"
+    >
+      <div fxLayout="column" fxLayoutAlign="space-between start">
+        <div fxLayout="row" class="text-title">
+          {{ name }}
         </div>
+      </div>
+    </div>
+    <div class="text-body mb-4">
+      {{ body }}
+    </div>
+    <div fxLayout="row wrap">
+      @for (skill of skills; track $index) {
+        <app-skill-chip [message]="skill" />
+      }
+      @for (skill of skillsWip; track $index) {
+        <app-skill-chip type="dashed" [message]="skill" />
       }
     </div>
-    @if (logo) {
-      <ng-container *ngTemplateOutlet="logo"></ng-container>
-    }
   </div>
-  <div class="text-body mb-4">
-    {{ body }}
-  </div>
-  <div fxLayout="row wrap">
-    @for (skill of skills; track $index) {
-      <app-skill-chip [message]="skill" />
-    }
-    @for (skill of skillsWip; track $index) {
-      <app-skill-chip type="dashed" [message]="skill" />
-    }
+  <div [ngStyle]="{width: tileContent.get}" fxLayout="column" fxLayoutAlign="space-between end">
+    <ng-container *ngTemplateOutlet="logo" />
+    <a
+      fxLayoutAlign="center center"
+      [href]="repositoryLink"
+      class="repo-link"
+      target="_blank"
+    >
+      <span class="text-2xl" nz-icon nzType="github" nzTheme="outline"></span>
+    </a>
   </div>
 </div>

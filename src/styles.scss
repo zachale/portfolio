@@ -60,10 +60,6 @@ body {
   @include mat.elevation(8);
 }
 
-.glass-card:hover {
-  @include mat.elevation(10);
-}
-
 .glass-chat {
   @extend .glass-texture;
   @apply rounded-3xl;
@@ -114,15 +110,15 @@ body {
 .nav-link {
   @apply rounded-xl;
   @include mat.elevation(4);
-  width: 50px;
-  height: 50px;
-  color: $pastel-pink-hover;
+  width: 48px;
+  height: 48px;
+  color: white;
   background-color: $button-background;
   transition: all ease-in-out 0.2s;
 }
 .nav-link:hover {
   @apply scale-105;
-  color: $pastel-pink;
+  color: $pastel-pink-hover;
   @include mat.elevation(8);
 }
 
@@ -146,6 +142,16 @@ body {
   @apply text-sm;
   font-family: "Poppins", sans-serif;
   font-style: normal;
+}
+
+img {
+  max-width: none;
+}
+
+.repo-link {
+  @apply rounded-xl;
+  width: 48px;
+  height: 48px;
 }
 
 .special-button {
