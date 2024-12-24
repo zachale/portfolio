@@ -7,16 +7,20 @@
       <div fxLayout="row" class="text-title">
         {{ name }}
       </div>
-      @if (repositoryLink) {
-        <div fxLayout="row" class="mt-1">
-          @if (skillsWip) {
-            <div class="text-base">🚀</div>
-          } @else {
-            <span class="mr-1" nz-icon nzType="link" nzTheme="outline"></span>
-          }
-          <a [href]="repositoryLink" target="_blank">repository</a>
-        </div>
-      }
+
+      <div fxLayoutAlign="start center" class="mt-1">
+        @if (repositoryLink) {
+          <span nz-icon class="mr-1" nzType="link" nzTheme="outline"></span>
+          <a class="underline" [href]="repositoryLink" target="_blank"
+            >repository</a
+          >
+        }
+        @if (demoLink) {
+          <nz-divider nzType="vertical" />
+          <span nz-icon nzType="caret-right" nzTheme="outline"></span>
+          <a class="underline" [href]="demoLink" target="_blank">demo</a>
+        }
+      </div>
     </div>
     @if (logo) {
       <ng-container *ngTemplateOutlet="logo"></ng-container>

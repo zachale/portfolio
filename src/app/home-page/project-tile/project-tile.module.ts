@@ -5,6 +5,7 @@ import { MatChipsModule } from "@angular/material/chips";
 import { NzIconModule } from "ng-zorro-antd/icon";
 import { CommonModule } from "@angular/common";
 import { SkillBarModule } from "../skill-bar/skill-bar.module"; // <-- Import CommonModule
+import { NzDividerModule } from "ng-zorro-antd/divider";
 
 @NgModule({
   declarations: [ProjectTileComponent],
@@ -15,6 +16,7 @@ import { SkillBarModule } from "../skill-bar/skill-bar.module"; // <-- Import Co
     MatChipsModule,
     NzIconModule,
     SkillBarModule,
+    NzDividerModule,
   ],
   exports: [ProjectTileComponent],
 })

@@ -1,7 +1,8 @@
-<div fxLayout="column" fxLayoutGap="16px">
+<div fxLayout="column" fxLayoutGap="32px">
   <app-project-tile
     name="Imaginate"
     repositoryLink="https://github.com/imaginate-ai"
+    demoLink="https://playimaginate.com/?source=zach"
     [logo]="imaginateLogo"
     body="A daily game that teaches users to identify AI generated content"
     [skills]="[
@@ -10,8 +11,8 @@
       'Flask',
       'React',
       'MongoDB',
-      'AWS Lambda',
-      'Stable Diffusion',
+      'Google Cloud',
+      'Serverless',
     ]"
   />
   <ng-template #imaginateLogo>
@@ -20,14 +21,18 @@
       src="/assets/imaginate/logo.png"
     />
   </ng-template>
-
   <app-project-tile
     name="IOT Solar Tracker"
     repositoryLink="https://github.com/zachale/solar-tracker"
     [logo]="solarTrackerLogo"
-    body="An internet connected solar tracker that will communicate sensor data with an online dashboard"
-    [skills]="['C++', 'Electronics']"
-    [skillsWip]="['Ruby on Rails', 'React', 'MySQL', 'Vercel']"
+    body="An internet connected solar tracker that communicates sensor data with an online dashboard"
+    [skills]="[
+      'C++',
+      'React',
+      'Express',
+      'Google Cloud',
+      'Electronic Engineering',
+    ]"
   />
   <ng-template #solarTrackerLogo>
     <img
@@ -35,24 +40,6 @@
       src="/assets/solar-tracker/logo.png"
     />
   </ng-template>
-
-  <app-project-tile
-    name="Thunder Resume"
-    repositoryLink="https://github.com/zachale/thunder"
-    [logo]="thunderLogo"
-    body="LLM powered resume tools that will help you nail your next job application"
-    [skills]="['Django', 'PostgreSQL', 'LLM Integration']"
-    [skillsWip]="['Angular', 'AWS']"
-  />
-  <ng-template #thunderLogo>
-    <div
-      class="icon mat-elevation-z4 rounded-xl border-2 border-slate-800"
-      fxLayoutAlign="center center"
-    >
-      <div class="text-3xl">⚡</div>
-    </div>
-  </ng-template>
-
   <app-project-tile
     name="Neural Network"
     repositoryLink="https://github.com/zachale/neural-network-from-scratch"
@@ -68,27 +55,28 @@
     ]"
   />
   <ng-template #neuralLogo
-    ><div
-      class="h-14 p-2 mat-elevation-z4 rounded-xl border-2 border-gray-500 relative"
+    ><img class="icon rounded-xl" src="/assets/neural-network/learning.gif"
+  /></ng-template>
+  <app-project-tile
+    name="Generative Code Editor | WIP"
+    repositoryLink="https://github.com/zachale/generative-visual-code-demo/"
+    [logo]="generativeCodeLogo"
+    body="LLM powered visual coding tool that generates code on command"
+    [skills]="['Deno', 'Ollama', 'Prompt Engineering', 'LLM Integration']"
+  />
+  <ng-template #generativeCodeLogo>
+    <div
+      class="icon mat-elevation-z4 rounded-xl border-2 border-slate-800"
       fxLayoutAlign="center center"
     >
-      <img
-        class="rounded-lg icon-small"
-        src="/assets/neural-network/base.png"
-      />
-      <span nz-icon nzType="arrow-right" nzTheme="outline"></span>
-      <img
-        class="rounded-lg icon-small"
-        src="/assets/neural-network/learning.gif"
-      />
-      <p class="absolute -top-5 font-bold z-10">Learning</p>
-    </div></ng-template
-  >
+      <div class="text-3xl">⚡</div>
+    </div>
+  </ng-template>
   <app-project-tile
     name="Pixy"
     repositoryLink="https://github.com/zachale/pixy"
     [logo]="pixyLogo"
-    body="A secure cloud based photo storage application, complete with user
+    body="A cloud based photo storage application, complete with user
     authentication"
     [skills]="['MongoDB', 'Express', 'Angular', 'NodeJS', 'Json Web Tokens']"
   />
