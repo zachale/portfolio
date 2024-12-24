@@ -1,0 +1,55 @@
+<div class="glass-card project p-4">
+  <div
+    [fxLayoutAlign]="logo ? 'space-between center' : 'start center'"
+    class="mb-8"
+  >
+    <div fxLayout="column" fxLayoutAlign="space-between start">
+      <div class="text-title">
+        {{ name }}
+      </div>
+      <div class="text-body font-medium">{{ position }}</div>
+    </div>
+    @if (logo) {
+      <ng-container *ngTemplateOutlet="logo"></ng-container>
+    }
+  </div>
+  <div class="text-body mb-4 text-left">
+    {{ body }}
+  </div>
+  @if (firstQuote) {
+    <div class="mb-4 border-black border-2 p-4 rounded-3xl rounded-br-md">
+      <div class="text-body text-left">"{{ firstQuote.body }}"</div>
+      <div class="text-body font-medium text-right">
+        - {{ firstQuote.author }}
+      </div>
+    </div>
+  }
+  @if (quotesAfterFirst?.length) {
+    <div class="mb-4">
+      @if (shouldShowMoreQuotes) {
+        @for (quote of quotesAfterFirst; track quote) {
+          <div class="mb-4 border-black border-2 p-4 rounded-3xl rounded-br-md">
+            <div class="text-body text-left">"{{ quote.body }}"</div>
+            <div class="text-body font-medium text-right">
+              - {{ quote.author }}
+            </div>
+          </div>
+        }
+        <div
+          class="text-body text-right underline cursor-pointer"
+          (click)="toggleQuotes()"
+        >
+          Hide
+        </div>
+      } @else {
+        <div
+          class="text-body text-right underline cursor-pointer"
+          (click)="toggleQuotes()"
+        >
+          Show more
+        </div>
+      }
+    </div>
+  }
+  <app-skill-bar [skills]="skills" />
+</div>

@@ -1,0 +1,8 @@
+<div fxLayout="row wrap">
+  @for (skill of skills; track $index) {
+    <app-skill-chip [message]="skill" />
+  }
+  @for (skill of skillsWip; track $index) {
+    <app-skill-chip type="dashed" [message]="skill" />
+  }
+</div>
