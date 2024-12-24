@@ -1,0 +1,33 @@
+<div class="glass-card project p-4">
+  <div
+    [fxLayoutAlign]="logo ? 'space-between center' : 'start center'"
+    class="mb-8"
+  >
+    <div fxLayout="column" fxLayoutAlign="space-between start">
+      <div fxLayout="row" class="text-title">
+        {{ name }}
+      </div>
+
+      <div fxLayoutAlign="start center" class="mt-1">
+        @if (repositoryLink) {
+          <span nz-icon class="mr-1" nzType="link" nzTheme="outline"></span>
+          <a class="underline" [href]="repositoryLink" target="_blank"
+            >repository</a
+          >
+        }
+        @if (demoLink) {
+          <nz-divider nzType="vertical" />
+          <span nz-icon nzType="caret-right" nzTheme="outline"></span>
+          <a class="underline" [href]="demoLink" target="_blank">demo</a>
+        }
+      </div>
+    </div>
+    @if (logo) {
+      <ng-container *ngTemplateOutlet="logo"></ng-container>
+    }
+  </div>
+  <div class="text-body mb-4">
+    {{ body }}
+  </div>
+  <app-skill-bar [skills]="skills" [skillsWip]="skillsWip" />
+</div>

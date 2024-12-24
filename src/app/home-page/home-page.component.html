@@ -1,158 +1,17 @@
-<div fxLayout="column" fxLayoutAlign="center center">
-  <div class="pt-8 pb-4 w-full" [style.maxWidth]="'992px'">
-    <div
-      fxLayoutAlign="start end"
-      fxLayout="row"
-      class="w-full"
-      fxLayoutGap="16px"
-    >
-      <img
-        class="max-h-16"
-        style="border-radius: 64px"
-        src="/assets/personal/pfp.jpg"
-      />
-      <div class="glass-chat text-body p-4">
-        Thanks for stopping by! I'm a computer science student driven by
-        impactful product and incredible people. I also happen to love going on
-        bike rides on local trails and ant keeping 🚲🐜
-      </div>
-    </div>
-    <div class="w-full h-full" fxLayout="row" fxLayoutAlign="end end">
-      <div
-        fxLayoutAlign="center center"
-        [style.width]="'168px'"
-        [style.height]="'60px'"
-      >
-        <div class="glass-reply-border">
-          <a href="mailto:zachlegesse@gmail.com">
-            <div class="glass-reply p-8">
-              <div class="text-body text-black">
-                Contact me
-                <span
-                  class="ml-1"
-                  nz-icon
-                  nzType="mail"
-                  nzTheme="outline"
-                ></span>
-              </div>
-            </div>
-          </a>
-        </div>
-      </div>
-    </div>
+<app-header />
+<div fxLayout="column" fxLayoutAlign="center center" fxLayoutGap="128px">
+  <div fxLayout="column" fxLayoutAlign="center center" fxLayoutGap="32px">
+    <nz-divider [nzText]="workExperience"></nz-divider>
+    <ng-template #workExperience>
+      <div class="text-title">Experience</div>
+    </ng-template>
+    <app-work-experience />
   </div>
-  <div class="project">
+  <div fxLayout="column" fxLayoutAlign="center center" fxLayoutGap="32px">
     <nz-divider [nzText]="projects"></nz-divider>
     <ng-template #projects>
       <div class="text-title">Projects</div>
     </ng-template>
-  </div>
-  <div fxLayout="column" fxLayoutGap="16px">
-    <div class="text-base">🚀= product in progress</div>
-    <app-project-tile
-      name="Imaginate"
-      repositoryLink="https://github.com/imaginate-ai"
-      [logo]="imaginateLogo"
-      body="A daily game that teaches users to identify AI generated content"
-      [skills]="[
-        'Python',
-        'Typescript',
-        'Flask',
-        'React',
-        'MongoDB',
-        'AWS Lambda',
-        'Stable Diffusion',
-      ]"
-    />
-    <ng-template #imaginateLogo>
-      <img
-        class="rounded-xl mat-elevation-z4 icon"
-        src="/assets/imaginate/logo.png"
-      />
-    </ng-template>
-
-    <app-project-tile
-      name="IOT Solar Tracker"
-      repositoryLink="https://github.com/zachale/solar-tracker"
-      [logo]="solarTrackerLogo"
-      body="An internet connected solar tracker that will communicate sensor data with an online dashboard"
-      [skills]="['C++', 'Electronics']"
-      [skillsWip]="['Ruby on Rails', 'React', 'MySQL', 'Vercel']"
-    />
-    <ng-template #solarTrackerLogo>
-      <img
-        class="rounded-xl mat-elevation-z4 icon"
-        src="/assets/solar-tracker/logo.png"
-      />
-    </ng-template>
-
-    <app-project-tile
-      name="Thunder Resume"
-      repositoryLink="https://github.com/zachale/thunder"
-      [logo]="thunderLogo"
-      body="LLM powered resume tools that will help you nail your next job application"
-      [skills]="['Django', 'PostgreSQL', 'LLM Integration']"
-      [skillsWip]="['Angular', 'AWS']"
-    />
-    <ng-template #thunderLogo>
-      <div
-        class="icon mat-elevation-z4 rounded-xl border-2 border-slate-800"
-        fxLayoutAlign="center center"
-      >
-        <div class="text-3xl">⚡</div>
-      </div>
-    </ng-template>
-
-    <app-project-tile
-      name="Neural Network"
-      repositoryLink="https://github.com/zachale/neural-network-from-scratch"
-      [logo]="neuralLogo"
-      body="An efficient machine learning algorithm built from independent research
-    "
-      [skills]="[
-        'Python',
-        'Numpy',
-        'Algorithms',
-        'Gradient Descent',
-        'Machine Learning',
-      ]"
-    />
-    <ng-template #neuralLogo
-      ><div
-        class="h-14 p-2 mat-elevation-z4 rounded-xl border-2 border-gray-500 relative"
-        fxLayoutAlign="center center"
-      >
-        <img
-          class="rounded-lg icon-small"
-          src="/assets/neural-network/base.png"
-        />
-        <span nz-icon nzType="arrow-right" nzTheme="outline"></span>
-        <img
-          class="rounded-lg icon-small"
-          src="/assets/neural-network/learning.gif"
-        />
-        <p class="absolute -top-5 font-bold z-10">Learning</p>
-      </div></ng-template
-    >
-    <app-project-tile
-      name="Pixy"
-      repositoryLink="https://github.com/zachale/pixy"
-      [logo]="pixyLogo"
-      body="A secure cloud based photo storage application, complete with user
-    authentication"
-      [skills]="['MongoDB', 'Express', 'Angular', 'NodeJS', 'Json Web Tokens']"
-    />
-    <ng-template #pixyLogo
-      ><div
-        class="icon mat-elevation-z4 rounded-xl border-2 border-blue-400"
-        fxLayoutAlign="center center"
-      >
-        <span
-          nz-icon
-          class="text-3xl"
-          nzType="camera"
-          nzTheme="twotone"
-        ></span></div
-    ></ng-template>
+    <app-projects />
   </div>
 </div>

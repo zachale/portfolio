@@ -1,0 +1,26 @@
+<div fxLayout="column" fxLayoutGap="32px">
+  <app-work-tile
+    name="Ten Thousand Coffees"
+    position="Software Engineer Intern"
+    [logo]="tenThousandCoffeesLogo"
+    body="Worked within a cross-functional team to deliver full-stack product features and fixes"
+    [skills]="['Typescript', 'Express', 'Angular', 'MongoDB']"
+    [quotes]="tenThousandCoffeesQuotes"
+  />
+  <ng-template #tenThousandCoffeesLogo>
+    <img class="icon" src="/assets/10kc/10kclogo.png" />
+  </ng-template>
+  <app-work-tile
+    name="Content Creation"
+    [logo]="contentCreationLogo"
+    body="Obsessively crafted an engaging content creation strategy"
+    [skills]="['1 million+ views', '350k+ likes', '$5000+ revenue']"
+  />
+  <ng-template #contentCreationLogo>
+    <div fxLayout="row" fxLayoutGap="8px">
+      <img class="icon p-2" src="/assets/content-creation/youtube.webp" />
+      <img class="icon p-2" src="/assets/content-creation/tiktok.png" />
+      <img class="icon p-2" src="/assets/content-creation/twitch.png" />
+    </div>
+  </ng-template>
+</div>
