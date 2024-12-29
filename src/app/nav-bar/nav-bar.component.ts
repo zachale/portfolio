@@ -1,6 +1,7 @@
-import { Component } from "@angular/core";
-import { Location } from "@angular/common";
-import { Router } from "@angular/router";
+import { DOCUMENT } from "@angular/common";
+import { Component, Inject, ViewChild, viewChild } from "@angular/core";
+import { NavigationEnd, Router } from "@angular/router";
+import { concatMap, EMPTY, filter, of, take, tap } from "rxjs";
 
 @Component({
   selector: "app-nav-bar",
@@ -9,19 +10,44 @@ import { Router } from "@angular/router";
 })
 export class NavBar {
   public innerWidth: any;
-  constructor(private location: Location, private router: Router) {}
+  lastId: string;
+  constructor(
+    protected router: Router,
+    @Inject(DOCUMENT) private document: Document,
+  ) {}
   ngOnInit() {
     this.innerWidth = window.innerWidth;
   }
-  navigateTo(route: string) {
+  protected navigateTo(route: string, id?: string) {
     if (this.router.url === route) {
-      window.scroll({
-        top: 0,
-        left: 0,
-        behavior: "smooth",
-      });
+      this.scrollToId(id);
     } else {
-      this.router.navigateByUrl(route);
+      of(this.router.navigateByUrl(route)).pipe(
+        concatMap(() =>
+          this.router.events.pipe(
+            filter((event) => event instanceof NavigationEnd),
+            concatMap(() => this.scrollToId(id)),
+          )
+        ),
+        take(1),
+      ).subscribe();
     }
+  }
+
+  private scrollToId(id?: string) {
+    if (id) {
+      const element = this.document.getElementById(id);
+      if (element) {
+        const position = element.getBoundingClientRect();
+        return of(
+          window.scrollTo({ top: position.top - 128 + globalThis.scrollY }),
+        );
+      }
+    } else {
+      return of(window.scroll({
+        top: 0,
+      }));
+    }
+    return EMPTY;
   }
 }

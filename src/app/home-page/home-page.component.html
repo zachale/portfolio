@@ -1,15 +1,26 @@
 <app-header />
-<div fxLayout="column" fxLayoutAlign="center center" fxLayoutGap="128px">
-  <div fxLayout="column" fxLayoutAlign="center center" fxLayoutGap="32px">
-    <nz-divider [nzText]="workExperience"></nz-divider>
-    <ng-template #workExperience>
+<div class="px-2" fxLayout="column" fxLayoutAlign="center center">
+  <div
+    id="experiences"
+    fxLayout="column"
+    fxLayoutAlign="center center"
+    fxLayoutGap="32px"
+  >
+    <nz-divider [nzText]="experiencesTitle"></nz-divider>
+    <ng-template #experiencesTitle>
       <div class="text-title">Experience</div>
     </ng-template>
     <app-work-experience />
   </div>
-  <div fxLayout="column" fxLayoutAlign="center center" fxLayoutGap="32px">
-    <nz-divider [nzText]="projects"></nz-divider>
-    <ng-template #projects>
+  <div
+    id="projects"
+    fxLayout="column"
+    fxLayoutAlign="center center"
+    fxLayoutGap="32px"
+    class="mt-32"
+  >
+    <nz-divider [nzText]="projectsTitle"></nz-divider>
+    <ng-template #projectsTitle>
       <div class="text-title">Projects</div>
     </ng-template>
     <app-projects />
