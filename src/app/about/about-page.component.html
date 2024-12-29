@@ -1,36 +1,44 @@
-<div fxLayout="column" fxLayoutAlign="center center">
+<div class="px-8" fxLayout="column" fxLayoutGap="64px">
   <div
-    fxLayoutAlign="start end"
-    fxLayout="row"
-    class="w-full"
-    fxLayoutGap="16px"
+    fxLayoutAlign="space-between center"
+    fxLayoutAlign.lt-md="center center"
+    fxLayout.gt-md="row"
+    fxLayout.lt-md="column"
+    class="w-full glass-card p-8 my-16"
   >
+    <div class="p-4" ngStyle.gt-md="max-width: 60%" fxFlexOrder="2">
+      <div class="text-title mb-8">About Me</div>
+      <div class="text-body">
+        My journey began at the age of 9 with dreams of becoming an inventor and
+        engineer. Today, that dream is in motion as I study Computer Science and
+        have the privelege to build and ship impactful product.
+      </div>
+    </div>
     <img
-      class="max-h-16"
-      style="border-radius: 64px"
+      fxFlexOrder.gt-md="3"
+      fxFlexOrder.lt-md="1"
+      class="rounded-full"
+      style="max-width: 40vw"
       src="/assets/personal/pfp.jpg"
     />
-    <div class="glass-chat text-body p-4">
-      Thanks for stopping by! I'm a computer science student driven by impactful
-      product and incredible people. I also happen to love going on bike rides
-      on local trails and ant keeping 🚲🐜
-    </div>
   </div>
-  <div class="w-full h-full" fxLayout="row" fxLayoutAlign="end end">
-    <div
-      fxLayoutAlign="center center"
-      [style.width]="'168px'"
-      [style.height]="'60px'"
-    >
-      <div class="glass-reply-border">
-        <a href="mailto:zachlegesse@gmail.com">
-          <div class="glass-reply p-8">
-            <div class="text-body text-black">
-              Contact me
-              <span class="ml-1" nz-icon nzType="mail" nzTheme="outline"></span>
-            </div>
-          </div>
-        </a>
+  <div
+    fxLayout.lt-md="column"
+    fxLayoutAlign="space-between center"
+    fxLayoutGap="64px"
+  >
+    <div class="glass-card w-full">
+      <div class="text-title">My Mindset</div>
+      <div class="p-8">
+        <div class="text-body">- Success requires failure 🚀</div>
+        <div class="text-body">- Anyone can change the world 🌍</div>
+      </div>
+    </div>
+    <div class="glass-card w-full">
+      <div class="text-title">My Motivators</div>
+      <div class="p-8">
+        <div class="text-body">- Building impactful product 🔨👷🏻</div>
+        <div class="text-body">- Collaborating with devoted teams 💻</div>
       </div>
     </div>
   </div>

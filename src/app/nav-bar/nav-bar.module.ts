@@ -3,9 +3,9 @@ import { NavBar } from "./nav-bar.component";
 import { NzIconModule } from "ng-zorro-antd/icon";
 import { MatButtonModule } from "@angular/material/button";
 import { MatCardModule } from "@angular/material/card";
+import { NzDropDownModule } from "ng-zorro-antd/dropdown";
 
 import { FlexLayoutModule } from "@angular/flex-layout";
-import { MatIconModule } from "@angular/material/icon";
 
 @NgModule({
   declarations: [NavBar],
@@ -14,7 +14,7 @@ import { MatIconModule } from "@angular/material/icon";
     MatButtonModule,
     MatCardModule,
     FlexLayoutModule,
-    MatIconModule,
+    NzDropDownModule,
   ],
   exports: [NavBar],
 })

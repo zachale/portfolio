@@ -1,43 +1,72 @@
-<div
-  fxLayout="row"
-  class="glass-nav-bar p-4"
-  fxLayoutAlign="space-between center"
->
-  <a (click)="navigateTo('/')">
-    <img class="max-h-12 rounded-full" src="/assets/sitelabel.png" />
-  </a>
-  <div fxLayout="row" fxLayoutGap="4px" fxLayoutAlign="end center">
-    <a
-      fxLayoutAlign="center center"
-      href="https://github.com/zachale"
-      class="nav-link"
-      target="_blank"
-    >
-      <span class="text-4xl" nz-icon nzType="github" nzTheme="outline"></span>
-    </a>
-    <a
-      fxLayout="row"
-      fxLayoutAlign="center center"
-      class="nav-link"
-      href="https://linkedin.com/in/zach-legesse"
-      target="_blank"
-    >
-      <span class="text-4xl" nz-icon nzType="linkedin" nzTheme="fill"></span>
-    </a>
-    <div class="nav-link h-full">
-      <div class="relative h-full">
-        <a href="https://playimaginate.com/?source=zach" target="_blank"
-          ><img
-            style="max-width: 50px"
-            width="100%"
-            src="/assets/imaginate/imaginate-beaker-solo.png"
-          />
+<div class="px-4">
+  <div
+    fxLayout="row"
+    class="glass-nav-bar p-4"
+    fxLayoutAlign="space-between center"
+  >
+    <div fxLayoutAlign="start center" fxLayoutGap="16px" fxLayout="row ">
+      @if (innerWidth > 720) {
+        <a (click)="navigateTo('/')">
+          <img class="h-12 min-w-12 rounded-full" src="/assets/sitelabel.png" />
         </a>
-        <img
-          class="absolute -bottom-2 -right-2 sparkle"
-          width="24px"
-          src="/assets/imaginate/sparkles.png"
-        />
+        <a (click)="navigateTo('/about')">About Me</a>
+        <a (click)="navigateTo('/', 'experiences')">Experience</a>
+        <a (click)="navigateTo('/', 'projects')">Projects</a>
+      } @else {
+        <a
+          class="text-4xl"
+          nz-dropdown
+          nzTrigger="click"
+          [nzDropdownMenu]="menu"
+          ><span nz-icon nzType="menu" nzTheme="outline"></span
+        ></a>
+      }
+      <nz-dropdown-menu #menu
+        ><ul nz-menu>
+          <a nz-menu-item (click)="navigateTo('/')">Home</a>
+          <a nz-menu-item (click)="navigateTo('/', 'experiences')"
+            >Experience</a
+          >
+          <a nz-menu-item (click)="router.navigateByUrl('/#projects')"
+            >Projects</a
+          >
+          <a nz-menu-item (click)="navigateTo('/about')">About Me</a>
+        </ul></nz-dropdown-menu
+      >
+    </div>
+    <div fxLayout="row" fxLayoutGap="4px" fxLayoutAlign="end center">
+      <a
+        fxLayoutAlign="center center"
+        href="https://github.com/zachale"
+        class="nav-link"
+        target="_blank"
+      >
+        <span class="text-4xl" nz-icon nzType="github" nzTheme="outline"></span>
+      </a>
+      <a
+        fxLayout="row"
+        fxLayoutAlign="center center"
+        class="nav-link"
+        href="https://linkedin.com/in/zach-legesse"
+        target="_blank"
+      >
+        <span class="text-4xl" nz-icon nzType="linkedin" nzTheme="fill"></span>
+      </a>
+      <div class="nav-link h-full">
+        <div class="relative h-full">
+          <a href="https://playimaginate.com/?source=zach" target="_blank"
+            ><img
+              style="max-width: 50px"
+              width="100%"
+              src="/assets/imaginate/imaginate-beaker-solo.png"
+            />
+          </a>
+          <img
+            class="absolute -bottom-2 -right-2 sparkle"
+            width="24px"
+            src="/assets/imaginate/sparkles.png"
+          />
+        </div>
       </div>
     </div>
   </div>

@@ -1,6 +1,4 @@
 import { Routes } from "@angular/router";
-import { FirstWorkTermReport } from "../app/work-term-report-1/first-work-term-report.component";
-import { FirstWorkTermReportModule } from "./work-term-report-1/first-work-term-report.module";
 
 export const routes: Routes = [
   {

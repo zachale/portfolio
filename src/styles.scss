@@ -7,7 +7,8 @@
 @tailwind utilities;
 
 $primary: #ffabf3;
-$accent: #1e1a1d;
+$accent: #1a1616;
+$accent-hover: #000000;
 
 $pastel-violet: #9695ff;
 $pastel-pink: #fe97ff;
@@ -22,6 +23,7 @@ html,
 body {
   height: 100%;
   background-color: $background;
+  scroll-behavior: smooth;
 }
 
 .background-accent {
@@ -53,6 +55,7 @@ body {
   @extend .glass-texture;
   @include mat.elevation(4);
   @apply rounded-xl;
+  padding: 16px;
   transition: all ease-in-out 0.2s;
 }
 
@@ -63,6 +66,14 @@ body {
 .glass-nav-bar {
   @extend .glass-card;
   @include mat.elevation(8);
+}
+
+.true-sticky {
+  position: -webkit-sticky;
+  position: -moz-sticky;
+  position: -ms-sticky;
+  position: -o-sticky;
+  position: sticky;
 }
 
 .glass-chat {
@@ -78,8 +89,9 @@ body {
 .glass-reply {
   @extend .glass-texture;
   @apply rounded-3xl;
-  @apply rounded-br-md;
+  @apply rounded-br-sm;
   @apply p-4;
+  @include mat.elevation(4);
   background: rgba(255, 255, 255, 0.779);
 }
 
@@ -164,14 +176,33 @@ body {
   font-style: normal;
 }
 
-.special-button {
+.button {
   @apply rounded-2xl;
-  @include mat.elevation(2);
+  @include mat.elevation(4);
   @apply p-2;
   @extend .glass-texture;
   height: 48px;
+  min-width: 144px;
   text-align: center;
-  color: rgba(255, 255, 255, 0.9);
+  transition: all 0.1s ease-in-out;
+}
+
+.button:hover {
+  @include mat.elevation(6);
+}
+
+.button-inverse {
+  @extend .button;
+  background-color: $accent;
+  color: white;
+}
+
+.button-inverse:hover {
+  background-color: $accent-hover;
+}
+
+.special-button {
+  @extend .button;
   background: linear-gradient(
     -45deg,
     #ffe7cc,
@@ -184,11 +215,6 @@ body {
   background-size: 600%;
   -webkit-animation: animate 5s linear infinite;
   animation: animate 5s linear infinite;
-  transition: all 0.1s ease-in-out;
-}
-
-.special-button:hover {
-  @include mat.elevation(4);
 }
 
 @-webkit-keyframes animate {
