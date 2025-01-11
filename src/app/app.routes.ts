@@ -19,6 +19,12 @@ export const routes: Routes = [
         import("./work-term-report-1/first-work-term-report.module").then((m) =>
           m.FirstWorkTermReportModule
         ),
+    }, {
+      path: "work-term-2",
+      loadChildren: () =>
+        import("./work-term-report-2/second-work-term-report.module").then((
+          m,
+        ) => m.SecondWorkTermReportModule),
     }],
   },
 ];
