@@ -1,14 +1,27 @@
 <div fxLayout="column" fxLayoutGap="32px">
   <app-work-tile
+    name="ApplyBoard"
+    position="Software Engineer Intern"
+    [logo]="applyBoardLogo"
+    body="Developed backend infrastructure solutions, simplifying complex integration systems using AWS and TypeScript"
+    [skills]="['Typescript', 'AWS CDK', 'DynamoDB', 'Lambda', 'S3', 'CloudWatch', 'CloudFormation', 'EventBridge']"
+    [quotes]="tenThousandCoffeesQuotes"
+    link="https://www.applyboard.com"
+  />
+  <ng-template #applyBoardLogo>
+    <img class="icon rounded-xl" src="/assets/applyboard/applyboard.jpg" />
+  </ng-template>
+  <app-work-tile
     name="Ten Thousand Coffees"
     position="Software Engineer Intern"
     [logo]="tenThousandCoffeesLogo"
     body="Worked within a cross-functional team to deliver full-stack product features and fixes"
     [skills]="['Typescript', 'Express', 'Angular', 'MongoDB']"
     [quotes]="tenThousandCoffeesQuotes"
+    link="https://www.tenthousandcoffees.com"
   />
   <ng-template #tenThousandCoffeesLogo>
-    <img class="icon" src="/assets/10kc/10kclogo.png" />
+    <img class="icon" src="/assets/10kc/10kc_Logo.svg" style="filter: brightness(0) invert(0);" />
   </ng-template>
   <app-work-tile
     name="Content Creation"

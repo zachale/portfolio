@@ -20,6 +20,8 @@ export class WorkTileComponent implements OnInit {
   skills: string[];
   @Input()
   quotes?: Array<Quote>;
+  @Input()
+  link?: string;
   firstQuote?: Quote;
   quotesAfterFirst?: Array<Quote>;
   shouldShowMoreQuotes = false;
@@ -31,5 +33,11 @@ export class WorkTileComponent implements OnInit {
   }
   toggleQuotes() {
     this.shouldShowMoreQuotes = !this.shouldShowMoreQuotes;
+  }
+
+  onTileClick() {
+    if (this.link) {
+      window.open(this.link, '_blank', 'noopener,noreferrer');
+    }
   }
 }

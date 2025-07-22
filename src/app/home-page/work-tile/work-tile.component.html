@@ -1,4 +1,9 @@
-<div class="glass-card project p-4">
+<div 
+  class="glass-card project p-4"
+  [class.cursor-pointer]="link"
+  (click)="onTileClick()"
+  [style.cursor]="link ? 'pointer' : 'default'"
+>
   <div
     [fxLayoutAlign]="logo ? 'space-between center' : 'start center'"
     class="mb-8"

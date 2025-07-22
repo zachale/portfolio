@@ -233,3 +233,16 @@ body {
     background-position: 100% 50%;
   }
 }
+
+.fade-in-up {
+  opacity: 0;
+  transform: translateY(40px);
+  animation: fadeInUp 0.8s cubic-bezier(0.23, 1, 0.32, 1) 0.1s forwards;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
