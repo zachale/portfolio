@@ -1,0 +1,46 @@
+.home-container {
+  min-height: 100vh;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.hero-section {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  
+  // On mobile, remove sticky positioning
+  @media (max-width: 959px) {
+    position: relative;
+    height: auto;
+    min-height: 60vh;
+  }
+}
+
+.content-section {
+  min-height: 100vh;
+  padding: 20px 0;
+  
+  // On desktop, make it scrollable
+  @media (min-width: 960px) {
+    overflow-y: auto;
+    max-height: 100vh;
+  }
+}
+
+// Ensure proper spacing on mobile
+@media (max-width: 959px) {
+  .home-container {
+    padding: 0 8px;
+  }
+  
+  .hero-section {
+    margin-bottom: 20px;
+  }
+} 
