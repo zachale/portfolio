@@ -25,6 +25,14 @@ export const routes: Routes = [
         import("./work-term-report-2/second-work-term-report.module").then((
           m,
         ) => m.SecondWorkTermReportModule),
-    }],
+    },
+    {
+      path: "work-term-3",
+      loadChildren: () =>
+        import("./work-term-report-3/third-work-term-report.module").then((
+          m,
+        ) => m.ThirdWorkTermReportModule),
+    },
+  ],
   },
 ];
