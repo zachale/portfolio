@@ -1,5 +1,24 @@
 <div fxLayout="column" fxLayoutGap="32px">
   <app-project-tile
+    name="Cognify (Hack The North '25)"
+    repositoryLink="https://github.com/faizm10/HackTheNorth2025"
+    demoLink=""
+    [logo]="cognifyLogo"
+    body="A learning tool built to teach you 100% of the content in any PDF "
+    [skills]="[
+      'AI engineering',
+      'Agentic systems',
+      'Typescript',
+      'Cohere',
+    ]"
+  />
+  <ng-template #cognifyLogo>
+    <img
+      class="rounded-xl mat-elevation-z4 icon"
+      src="/assets/cognify/logo.jpeg"
+    />
+  </ng-template>
+  <app-project-tile
     name="Imaginate"
     repositoryLink="https://github.com/imaginate-ai"
     demoLink="https://playimaginate.com/?source=zach"
