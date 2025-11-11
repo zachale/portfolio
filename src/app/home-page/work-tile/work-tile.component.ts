@@ -1,13 +1,11 @@
-import { Component, Input, OnInit, TemplateRef } from "@angular/core";
-
-type Quote = { body: string; author: string };
+import { Component, Input, TemplateRef } from "@angular/core";
 
 @Component({
   selector: "app-work-tile",
   templateUrl: "./work-tile.component.html",
   styleUrl: "./work-tile.component.scss",
 })
-export class WorkTileComponent implements OnInit {
+export class WorkTileComponent {
   @Input()
   name: string;
   @Input()
@@ -19,21 +17,9 @@ export class WorkTileComponent implements OnInit {
   @Input()
   skills: string[];
   @Input()
-  quotes?: Array<Quote>;
-  @Input()
   link?: string;
-  firstQuote?: Quote;
-  quotesAfterFirst?: Array<Quote>;
-  shouldShowMoreQuotes = false;
-  ngOnInit(): void {
-    if (this.quotes?.length) {
-      this.firstQuote = this.quotes?.[0];
-      this.quotesAfterFirst = this.quotes?.slice(1);
-    }
-  }
-  toggleQuotes() {
-    this.shouldShowMoreQuotes = !this.shouldShowMoreQuotes;
-  }
+  @Input()
+  dateRange?: string;
 
   onTileClick() {
     if (this.link) {

@@ -112,16 +112,33 @@ body {
 
 .text-body {
   @apply font-medium;
-  font-size: 16px;
+  font-size: 13px;
   font-family: 'Poppins', sans-serif;
   font-style: normal;
+}
+
+.text-role {
+  @apply font-medium;
+  font-size: 15px;
+  font-family: 'Poppins', sans-serif;
+  font-style: italic;
+}
+
+.text-date {
+  @apply font-semibold;
+  font-size: 11px;
+  font-family: 'Poppins', sans-serif;
+  font-style: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #666;
 }
 
 .text-title {
   @apply font-bold;
   font-family: 'Outfit', sans-serif;
   font-optical-sizing: auto;
-  font-size: 32px;
+  font-size: 20px;
   font-style: normal;
   line-height: normal;
 }
@@ -160,8 +177,8 @@ body {
 }
 
 .icon {
-  width: 50px;
-  height: 50px;
+  width: 64px;
+  height: 64px;
 }
 
 .icon-small {
@@ -171,7 +188,7 @@ body {
 
 .text-skill {
   @apply font-normal;
-  @apply text-sm;
+  @apply text-xs;
   font-family: 'Poppins', sans-serif;
   font-style: normal;
 }

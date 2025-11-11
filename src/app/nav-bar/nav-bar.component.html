@@ -6,10 +6,11 @@
   >
     <div fxLayoutAlign="start center" fxLayoutGap="16px" fxLayout="row ">
       @if (innerWidth > 720) {
-        <a (click)="navigateTo('/')">
-          <img class="h-12 min-w-12 rounded-full" src="/assets/sitelabel.png" />
-        </a>
-        <a (click)="navigateTo('/about')">About Me</a>
+        <img
+        class="rounded-full h-16 w-16"
+        src="/assets/personal/pfp.jpg"
+        alt="Profile photo"
+      />
         <a (click)="navigateTo('/', 'experiences')">Experience</a>
         <a (click)="navigateTo('/', 'projects')">Projects</a>
       } @else {
@@ -52,7 +53,7 @@
       >
         <span class="text-4xl" nz-icon nzType="linkedin" nzTheme="fill"></span>
       </a>
-      <div class="nav-link h-full">
+      <!-- <div class="nav-link h-full">
         <div class="relative h-full">
           <a href="https://playimaginate.com/?source=zach" target="_blank"
             ><img
@@ -67,7 +68,7 @@
             src="/assets/imaginate/sparkles.png"
           />
         </div>
-      </div>
+      </div> -->
     </div>
   </div>
 </div>

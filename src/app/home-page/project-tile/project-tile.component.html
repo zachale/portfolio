@@ -1,33 +1,35 @@
-<div class="glass-card project p-4">
-  <div
-    [fxLayoutAlign]="logo ? 'space-between center' : 'start center'"
-    class="mb-8"
-  >
-    <div fxLayout="column" fxLayoutAlign="space-between start">
-      <div fxLayout="row" class="text-title">
-        {{ name }}
+<div class="glass-card project p-3 fade-in-up">
+  <div fxLayout="row" fxLayoutGap="16px" fxLayoutAlign="start center">
+    <div fxFlex fxLayout="column">
+      <div fxLayout="column" fxLayoutAlign="start start" class="mb-1">
+        <div class="text-title">
+          {{ name }}
+        </div>
+        <div fxLayoutAlign="start center" class="mt-1">
+          @if (repositoryLink) {
+            <span nz-icon class="mr-1" nzType="link" nzTheme="outline"></span>
+            <a class="underline" [href]="repositoryLink" target="_blank"
+              >repository</a
+            >
+          }
+          @if (demoLink) {
+            <nz-divider nzType="vertical" />
+            <span nz-icon nzType="caret-right" nzTheme="outline"></span>
+            <a class="underline" [href]="demoLink" target="_blank">demo</a>
+          }
+        </div>
       </div>
-
-      <div fxLayoutAlign="start center" class="mt-1">
-        @if (repositoryLink) {
-          <span nz-icon class="mr-1" nzType="link" nzTheme="outline"></span>
-          <a class="underline" [href]="repositoryLink" target="_blank"
-            >repository</a
-          >
-        }
-        @if (demoLink) {
-          <nz-divider nzType="vertical" />
-          <span nz-icon nzType="caret-right" nzTheme="outline"></span>
-          <a class="underline" [href]="demoLink" target="_blank">demo</a>
-        }
+      <div class="text-body mb-3">
+        {{ body }}
       </div>
+      <app-skill-bar [skills]="skills" [skillsWip]="skillsWip" />
     </div>
-    @if (logo) {
-      <ng-container *ngTemplateOutlet="logo"></ng-container>
-    }
+    <div fxLayout="column" fxLayoutAlign="center center" fxLayoutGap="8px" class="right-column">
+      @if (logo) {
+        <div class="logo-container">
+          <ng-container *ngTemplateOutlet="logo"></ng-container>
+        </div>
+      }
+    </div>
   </div>
-  <div class="text-body mb-4">
-    {{ body }}
-  </div>
-  <app-skill-bar [skills]="skills" [skillsWip]="skillsWip" />
 </div>

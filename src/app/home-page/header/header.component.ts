@@ -1,19 +1,15 @@
 import { Component } from "@angular/core";
-import { Router } from "@angular/router";
 
 @Component({
   selector: "app-header",
   templateUrl: "./header.component.html",
 })
 export class Header {
-  emailCopied = false;
-  constructor(protected router: Router) {}
-  copyEmail() {
-    try {
-      navigator.clipboard.writeText("zachlegesse@gmail.com");
-    } catch (e) {
-      return;
-    }
-    this.emailCopied = true;
+  downloadResume() {
+    // Create a temporary link element to trigger download
+    const link = document.createElement('a');
+    link.href = '/assets/resume/Zach_Legesse_S26_2.pdf';
+    link.download = 'Zach_Legesse_Resume.pdf';
+    link.click();
   }
 }

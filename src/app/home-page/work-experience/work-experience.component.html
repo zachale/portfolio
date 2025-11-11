@@ -1,11 +1,23 @@
 <div fxLayout="column" fxLayoutGap="32px">
   <app-work-tile
+    name="RBC"
+    position="GenAI Engineer Intern"
+    dateRange="JAN-APR 2026"
+    [logo]="rbcLogo"
+    body="Building AI agents to automate 80% of manual auditing flows"
+    [skills]="['Python', 'LangChain', 'RAG', 'Agentic Systems']"
+    link="https://www.rbc.com"
+  />
+  <ng-template #rbcLogo>
+    <img class="icon rounded-xl" src="/assets/rbc/rbc-logo.jpeg" />
+  </ng-template>
+  <app-work-tile
     name="ApplyBoard"
     position="Software Engineer Intern"
+    dateRange="MAY-AUG 2025"
     [logo]="applyBoardLogo"
-    body="Developed backend infrastructure solutions, simplifying complex integration systems using AWS and TypeScript"
-    [skills]="['Typescript', 'AWS CDK', 'DynamoDB', 'Lambda', 'S3', 'CloudWatch', 'CloudFormation', 'EventBridge']"
-    [quotes]="tenThousandCoffeesQuotes"
+    body="Developed backend solutions, replace legacy integration system using AWS"
+    [skills]="['Typescript', 'Node.js', 'AWS CDK', 'Serverless']"
     link="https://www.applyboard.com"
   />
   <ng-template #applyBoardLogo>
@@ -14,26 +26,13 @@
   <app-work-tile
     name="Ten Thousand Coffees"
     position="Software Engineer Intern"
+    dateRange="JAN-DEC 2024"
     [logo]="tenThousandCoffeesLogo"
-    body="Worked within a cross-functional team to deliver full-stack product features and fixes"
+    body="Worked within a cross-functional team to deliver full-stack product features"
     [skills]="['Typescript', 'Express', 'Angular', 'MongoDB']"
-    [quotes]="tenThousandCoffeesQuotes"
     link="https://www.tenthousandcoffees.com"
   />
   <ng-template #tenThousandCoffeesLogo>
     <img class="icon" src="/assets/10kc/10kc_Logo.svg" style="filter: brightness(0) invert(0);" />
-  </ng-template>
-  <app-work-tile
-    name="Content Creation"
-    [logo]="contentCreationLogo"
-    body="Obsessively crafted an engaging content creation strategy"
-    [skills]="['1 million+ views', '350k+ likes', '$5000+ revenue']"
-  />
-  <ng-template #contentCreationLogo>
-    <div fxLayout="row" fxLayoutGap="8px">
-      <img class="icon p-2" src="/assets/content-creation/youtube.webp" />
-      <img class="icon p-2" src="/assets/content-creation/tiktok.png" />
-      <img class="icon p-2" src="/assets/content-creation/twitch.png" />
-    </div>
   </ng-template>
 </div>
