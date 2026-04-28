@@ -3,6 +3,7 @@
     fxLayout="row"
     class="glass-nav-bar p-4"
     fxLayoutAlign="space-between center"
+    style="position: relative;"
   >
     <div fxLayoutAlign="start center" fxLayoutGap="16px" fxLayout="row ">
       @if (innerWidth > 720) {
@@ -35,6 +36,23 @@
         </ul></nz-dropdown-menu
       >
     </div>
+    <div
+      class="navbar-cta"
+      [style.opacity]="ctaOpacity"
+      [style.transform]="ctaTransform"
+      [style.pointer-events]="ctaOpacity > 0.5 ? 'auto' : 'none'"
+    >
+      <a
+        href="https://calendly.com/zachlegesse/30min"
+        target="_blank"
+        class="glass-reply-border text-body"
+        style="font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: inherit;"
+      >
+        Call me
+        <span nz-icon nzType="phone" nzTheme="outline"></span>
+      </a>
+    </div>
+
     <div fxLayout="row" fxLayoutGap="16px" fxLayoutAlign="end center">
       <a
         fxLayout="row"

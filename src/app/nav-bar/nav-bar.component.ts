@@ -1,5 +1,5 @@
 import { DOCUMENT } from "@angular/common";
-import { Component, Inject, ViewChild, viewChild } from "@angular/core";
+import { Component, HostListener, Inject, ViewChild, viewChild } from "@angular/core";
 import { NavigationEnd, Router } from "@angular/router";
 import { concatMap, EMPTY, filter, of, take, tap } from "rxjs";
 
@@ -11,6 +11,22 @@ import { concatMap, EMPTY, filter, of, take, tap } from "rxjs";
 export class NavBar {
   public innerWidth: any;
   lastId: string;
+  ctaOpacity = 0;
+  ctaTranslateY = 8;
+  ctaTransform = 'translateX(-50%) translateY(8px)';
+
+  @HostListener('window:scroll')
+  onScroll() {
+    const heroCta = document.getElementById('hero-cta');
+    if (!heroCta) return;
+    const rect = heroCta.getBoundingClientRect();
+    const navbarH = 100;
+    const progress = Math.max(0, Math.min(1, (navbarH - rect.bottom) / navbarH));
+    this.ctaOpacity = progress;
+    this.ctaTranslateY = 8 * (1 - progress);
+    this.ctaTransform = `translateX(-50%) translateY(${this.ctaTranslateY}px)`;
+  }
+
   constructor(
     protected router: Router,
     @Inject(DOCUMENT) private document: Document,

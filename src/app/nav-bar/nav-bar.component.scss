@@ -1,3 +1,9 @@
+.navbar-cta {
+  position: absolute;
+  left: 50%;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+
 .sparkle {
   animation: icon-wiggle 3s infinite ease-in-out;
   transform: rotate(0);
