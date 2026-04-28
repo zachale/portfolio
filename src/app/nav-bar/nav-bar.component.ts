@@ -18,6 +18,13 @@ export class NavBar {
   ngOnInit() {
     this.innerWidth = window.innerWidth;
   }
+  downloadResume() {
+    const link = document.createElement('a');
+    link.href = '/assets/resume/Zach_Legesse_F26_AI.pdf';
+    link.download = 'Zach_Legesse_Resume.pdf';
+    link.click();
+  }
+
   protected navigateTo(route: string, id?: string) {
     if (this.router.url === route) {
       this.scrollToId(id);

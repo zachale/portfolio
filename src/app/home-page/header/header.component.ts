@@ -4,12 +4,4 @@ import { Component } from "@angular/core";
   selector: "app-header",
   templateUrl: "./header.component.html",
 })
-export class Header {
-  downloadResume() {
-    // Create a temporary link element to trigger download
-    const link = document.createElement('a');
-    link.href = '/assets/resume/Zach_Legesse_F26_AI.pdf';
-    link.download = 'Zach_Legesse_Resume.pdf';
-    link.click();
-  }
-}
+export class Header {}

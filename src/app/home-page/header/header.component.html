@@ -4,17 +4,17 @@
   fxLayoutAlign="center center"
   style="min-height: 500px"
 >
-  <div class="text-center">
-    <div><div class="text-gradient text-header">Hey, I'm Zach</div>
-    <div class="text-sub-header mb-4">AI + Product Engineer</div>
-    <button
-      class="glass-reply-border mt-4 text-body"
-        (click)="downloadResume()"
-        style="font-size: 16px;"
-      >
-        Resume
-        <span nz-icon nzType="download" nzTheme="outline" class="ml-2"></span>
-      </button>
-    </div>
+  <div fxLayout="column" fxLayoutAlign="center center" fxLayoutGap="16px">
+    <div class="text-gradient text-header">Hey, I'm Zach</div>
+    <div class="text-sub-header">AI + Product Engineer</div>
+    <a
+      href="https://calendly.com/zachlegesse/30min"
+      target="_blank"
+      class="glass-reply-border text-body"
+      style="font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; color: inherit;"
+    >
+      Call me
+      <span nz-icon nzType="phone" nzTheme="outline"></span>
+    </a>
   </div>
 </div>
