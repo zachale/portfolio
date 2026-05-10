@@ -28,6 +28,13 @@ export const routes: Routes = [
           m,
         ) => m.ThirdWorkTermReportModule),
     },
+    {
+      path: "work-term-4",
+      loadChildren: () =>
+        import("./work-term-report-4/fourth-work-term-report.module").then((
+          m,
+        ) => m.FourthWorkTermReportModule),
+    },
   ],
   },
 ];
