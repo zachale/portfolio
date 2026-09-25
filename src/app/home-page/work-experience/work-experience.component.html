@@ -1,5 +1,17 @@
 <div fxLayout="column" fxLayoutGap="32px">
   <app-work-tile
+    name="StrideScale AI"
+    position="Cofounder"
+    dateRange="MAY 2026-PRESENT"
+    [logo]="strideScaleLogo"
+    body="Built AI agents that automate wholesale sales pipelines for CPG brands"
+    [skills]="['Agentic Systems', 'LLMs', 'Microsoft Graph', 'Airtable']"
+    link="https://stridescaleai.com"
+  />
+  <ng-template #strideScaleLogo>
+    <img class="icon" src="/assets/stride-scale/stride-scale-logo.svg" />
+  </ng-template>
+  <app-work-tile
     name="RBC"
     position="GenAI Engineer Intern"
     dateRange="JAN-APR 2026"
