@@ -36,8 +36,7 @@
               }
             ],
             "styles": [
-              "node_modules/@angular/material/prebuilt-themes/magenta-violet.css",
-              "./node_modules/ng-zorro-antd/ng-zorro-antd.min.css",
+              "./node_modules/ng-zorro-antd/ng-zorro-antd.variable.min.css",
               "src/styles.scss"
             ],
             "scripts": []
@@ -56,6 +55,14 @@
                   "maximumError": "4kb"
                 }
               ],
+              "optimization": {
+                "scripts": true,
+                "styles": {
+                  "minify": true,
+                  "inlineCritical": false
+                },
+                "fonts": true
+              },
               "outputHashing": "all"
             },
             "development": {

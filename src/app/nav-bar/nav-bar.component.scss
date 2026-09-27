@@ -1,6 +1,11 @@
 .navbar-cta {
   position: absolute;
   left: 50%;
+  // Hidden starting state must live in CSS: if it only comes from the template
+  // bindings, the transition animates from visible to hidden on first render.
+  opacity: 0;
+  transform: translateX(-50%) translateY(8px);
+  pointer-events: none;
   transition: opacity 0.15s ease, transform 0.15s ease;
 }
 

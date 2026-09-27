@@ -2,21 +2,37 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
+$material-theme: mat.define-theme((
+  color: (
+    theme-type: dark,
+    primary: mat.$green-palette,
+    tertiary: mat.$spring-green-palette,
+  ),
+));
+
+html {
+  @include mat.all-component-themes($material-theme);
+}
+
+@include mat.core();
+@include mat.typography-hierarchy($material-theme);
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-$primary: #ffabf3;
+// Forest green accent. Keep $forest in sync with the ng-zorro primaryColor in app.config.ts.
+$forest-dark: #1b4332;
+$forest: #2d6a4f;
+$forest-light: #40916c;
+
+$primary: $forest;
 $accent: #1a1616;
 $accent-hover: #000000;
 
-$pastel-violet: #9695ff;
-$pastel-pink: #fe97ff;
-$pastel-pink-hover: #fecdff;
-
 $button-background: #14080e;
 
-$background: #f4f5ff;
+$background: #f4f6f1;
 $dots: #4c4e72;
 
 html,
@@ -39,7 +55,7 @@ body {
 }
 
 .text-gradient {
-  background: linear-gradient(to right, $pastel-pink, $pastel-violet);
+  background: linear-gradient(to right, $forest-dark, $forest-light);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -168,7 +184,7 @@ body {
 
 .nav-link:hover {
   @apply scale-110;
-  color: black;
+  color: $forest;
 }
 
 .project {
@@ -222,14 +238,19 @@ body {
   @extend .button;
   background: linear-gradient(
     -45deg,
-    #ffe7cc,
-    #ffdde7,
-    #c6dfff,
-    #c4fff1,
-    #ffe7cc,
-    #ffdde7
+    $forest-dark,
+    $forest,
+    $forest-dark,
+    $forest,
+    $forest-dark,
+    $forest
   );
   background-size: 600%;
+  color: $background;
+
+  &:hover {
+    color: $background;
+  }
   -webkit-animation: animate 5s linear infinite;
   animation: animate 5s linear infinite;
 }
