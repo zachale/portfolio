@@ -12,8 +12,7 @@
     </div>
   </div>
   <div class="relative mt-4">
-    <tracker-history-chart class="h-[430px] sm:h-[470px]" [readings]="readings()" [spanDays]="days()"
-      (hover)="hover.emit($event)" />
+    <tracker-history-chart class="h-[430px] sm:h-[470px]" [readings]="readings()" [spanDays]="days()" />
     @if (loading()) {
       <div class="shimmer absolute inset-0 rounded-[var(--radius-md)]" style="background-color: var(--surface-solid)" aria-hidden="true"></div>
     } @else if (!readings().length) {
@@ -25,9 +24,6 @@
       </div>
     }
   </div>
-  <p class="mt-3 flex items-center gap-2 text-[13px] text-2">
-    <tracker-icon name="clock" [size]="14" /> Hover or tap a moment to replay it in the 3D view.
-  </p>
 </section>
 
 <ng-template #rangeTabs let-options>

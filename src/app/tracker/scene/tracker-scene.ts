@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { Sky } from "three/examples/jsm/objects/Sky.js";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
@@ -28,7 +27,8 @@ export interface Framing {
 }
 
 interface SceneOptions {
-  interactive: boolean;
+  /** Desktop-class device: render at full pixel ratio with sharper shadows. */
+  highDetail: boolean;
   reducedMotion: boolean;
   onAtmosphere?: (atmosphere: Atmosphere) => void;
 }
@@ -127,7 +127,6 @@ export class TrackerScene {
   private readonly renderer: THREE.WebGLRenderer;
   private readonly scene = new THREE.Scene();
   private readonly camera = new THREE.PerspectiveCamera(40, 1, 0.3, 4000);
-  private readonly controls: OrbitControls | null = null;
   private readonly clock = new THREE.Clock();
 
   private readonly sky = new Sky();
@@ -171,7 +170,7 @@ export class TrackerScene {
 
   constructor(private readonly host: HTMLElement, private readonly options: SceneOptions) {
     this.renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, options.interactive ? 2 : 1.75));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, options.highDetail ? 2 : 1.75));
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -201,7 +200,7 @@ export class TrackerScene {
 
     // The moon casts the shadows once the sun has set; only one of the two casts at a time, so
     // the shaders don't recompile at dusk.
-    const shadowSize = options.interactive ? 2048 : 1024;
+    const shadowSize = options.highDetail ? 2048 : 1024;
     for (const light of [this.sunLight, this.moonLight]) {
       light.castShadow = true;
       light.shadow.mapSize.set(shadowSize, shadowSize);
@@ -229,23 +228,9 @@ export class TrackerScene {
     // the array's face shows, and the lake opens up on the right.
     const standing = PATH_DIRECTION.clone().rotateAround(new THREE.Vector2(), -0.09);
     this.baseAzimuth = Math.atan2(standing.x, standing.y);
-    this.placeCamera(this.baseAzimuth);
-
-    if (options.interactive) {
-      const controls = new OrbitControls(this.camera, this.renderer.domElement);
-      controls.target.copy(CAMERA_TARGET);
-      controls.enableZoom = false;
-      controls.enablePan = false;
-      controls.enableDamping = true;
-      controls.dampingFactor = 0.08;
-      controls.rotateSpeed = 0.45;
-      controls.minPolarAngle = 1.12;
-      controls.maxPolarAngle = 1.5;
-      controls.minAzimuthAngle = this.baseAzimuth - 1.1;
-      controls.maxAzimuthAngle = this.baseAzimuth + 1.1;
-      controls.update();
-      this.controls = controls;
-    }
+    // The camera never moves and takes no input: the canvas must not swallow the touches that
+    // scroll the page on a phone.
+    this.placeCamera();
 
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.resizeObserver.observe(host);
@@ -277,7 +262,6 @@ export class TrackerScene {
     this.resizeObserver.disconnect();
     this.intersectionObserver.disconnect();
     document.removeEventListener("visibilitychange", this.updateRunning);
-    this.controls?.dispose();
     this.scene.traverse((object) => {
       const mesh = object as THREE.Mesh;
       mesh.geometry?.dispose();
@@ -340,16 +324,11 @@ export class TrackerScene {
     const pulse = this.options.reducedMotion ? 1 : 0.65 + 0.35 * Math.sin(elapsed * 2.2);
     this.led.material.emissiveIntensity = 2.2 * pulse;
 
-    if (this.controls) {
-      this.controls.update();
-    } else if (!this.options.reducedMotion) {
-      this.placeCamera(this.baseAzimuth + Math.sin(elapsed * 0.12) * 0.12);
-    }
-
     this.renderer.render(this.scene, this.camera);
   }
 
-  private placeCamera(azimuth: number): void {
+  private placeCamera(): void {
+    const azimuth = this.baseAzimuth;
     const aspect = this.camera.aspect || 1;
     // Narrow screens see less sideways, so step back and widen the lens.
     const portrait = aspect < 1;
@@ -380,11 +359,7 @@ export class TrackerScene {
     // Shift the projection (not the camera) so the tracker lands where the layout has room for it.
     this.camera.setViewOffset(width, height, (0.5 - this.framing.x) * width, (0.5 - this.framing.y) * height, width, height);
     this.camera.updateProjectionMatrix();
-    if (this.controls) {
-      this.controls.update();
-    } else {
-      this.placeCamera(this.baseAzimuth);
-    }
+    this.placeCamera();
     if (!this.running) this.renderer.render(this.scene, this.camera);
   }
 

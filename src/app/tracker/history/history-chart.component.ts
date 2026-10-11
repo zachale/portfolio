@@ -1,5 +1,5 @@
 import {
-  AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, NgZone, OnDestroy, effect, input, output, viewChild,
+  AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, NgZone, OnDestroy, effect, input, viewChild,
 } from "@angular/core";
 import * as echarts from "echarts/core";
 import { CustomChart, LineChart } from "echarts/charts";
@@ -43,7 +43,7 @@ function line(readings: Reading[], value: (r: Reading) => number | null): (numbe
 }
 
 /** The reading closest to a time; readings are sorted ascending. */
-export function nearest(readings: Reading[], t: number): Reading | null {
+function nearest(readings: Reading[], t: number): Reading | null {
   if (!readings.length) return null;
   let lo = 0, hi = readings.length - 1;
   while (lo < hi) {
@@ -67,7 +67,6 @@ export class HistoryChartComponent implements AfterViewInit, OnDestroy {
   readonly readings = input.required<Reading[]>();
   readonly spanDays = input.required<number>();
   readonly expanded = input(false);
-  readonly hover = output<Reading | null>();
 
   private readonly el = viewChild.required<ElementRef<HTMLElement>>("chart");
   private chart: echarts.ECharts | null = null;
@@ -93,13 +92,6 @@ export class HistoryChartComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     this.zone.runOutsideAngular(() => {
       this.chart = echarts.init(this.el().nativeElement, null, { renderer: "canvas" });
-      this.chart.on("updateAxisPointer", (event: unknown) => {
-        const axes = (event as { axesInfo?: { value: number }[] }).axesInfo;
-        if (!axes?.length) return;
-        const reading = nearest(this.readings(), axes[0].value);
-        this.zone.run(() => this.hover.emit(reading));
-      });
-      this.chart.on("globalout", () => this.zone.run(() => this.hover.emit(null)));
       this.resizeObserver = new ResizeObserver(() => {
         this.chart?.resize();
         this.render(this.readings(), this.spanDays(), this.expanded());

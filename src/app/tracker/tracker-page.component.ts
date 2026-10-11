@@ -8,7 +8,7 @@ import { LoginPanelComponent } from "./login/login-panel.component";
 import { SceneViewComponent } from "./scene/scene-view.component";
 import type { Atmosphere, Framing, SceneMoment } from "./scene/tracker-scene";
 import {
-  Reading, STATUS_META, Telemetry, kmh, relativeTime, siteDateTime, siteTime, statusSince, summarizeDay,
+  STATUS_META, Telemetry, kmh, relativeTime, siteTime, statusSince, summarizeDay,
 } from "./telemetry";
 import { Session, TrackerApi } from "./tracker-api.service";
 import { ExtensionGaugeComponent } from "./ui/extension-gauge.component";
@@ -44,7 +44,6 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
   protected readonly loading = signal(false);
   protected readonly failed = signal(false);
   protected readonly now = signal(Date.now());
-  protected readonly hovered = signal<Reading | null>(null);
   protected readonly atmosphere = signal<Atmosphere>({ horizon: "#283d68", night: 1 });
   protected readonly menuOpen = signal(false);
   private readonly accountMenu = viewChild<ElementRef<HTMLElement>>("accountMenu");
@@ -62,26 +61,19 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
   protected readonly telemetry = computed(() => this.cache().get(this.days()) ?? null);
   protected readonly readings = computed(() => this.telemetry()?.readings ?? []);
   protected readonly latest = computed(() => this.readings().at(-1) ?? null);
-  /** What the hero shows: the moment being replayed from the chart, or the latest reading. */
-  protected readonly shown = computed(() => this.hovered() ?? this.latest());
   protected readonly today = computed(() => summarizeDay(this.readings(), this.now()));
   protected readonly since = computed(() => {
     const since = statusSince(this.readings());
     return since === null ? null : siteTime.format(since);
   });
-  protected readonly replayLabel = computed(() => {
-    const hovered = this.hovered();
-    return hovered ? siteDateTime.format(hovered.t) : null;
-  });
 
   protected readonly moment = computed<SceneMoment>(() => {
-    const shown = this.shown();
-    const replaying = this.hovered() !== null;
+    const latest = this.latest();
     return {
-      time: new Date(replaying && shown ? shown.t : this.now()),
-      percent: shown?.percent ?? 62,
-      windMs: shown?.windSensor ? shown.windMs : 1.2,
-      status: shown?.status ?? null,
+      time: new Date(this.now()),
+      percent: latest?.percent ?? 62,
+      windMs: latest?.windSensor ? latest.windMs : 1.2,
+      status: latest?.status ?? null,
     };
   });
 
@@ -145,7 +137,6 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
 
   protected selectDays(days: number): void {
     this.days.set(days);
-    this.hovered.set(null);
     this.load(days, this.cache().has(days));
   }
 

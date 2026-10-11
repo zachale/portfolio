@@ -29,7 +29,6 @@ export class HistoryCardComponent {
   readonly days = input.required<number>();
   readonly loading = input(false);
   readonly daysChange = output<number>();
-  readonly hover = output<Reading | null>();
 
   protected readonly ranges = RANGES;
   protected readonly statusMeta = STATUS_META;
@@ -55,7 +54,6 @@ export class HistoryCardComponent {
   protected onClosed(): void {
     this.expanded.set(false);
     this.view.set("chart");
-    this.hover.emit(null);
   }
 
   protected onBackdrop(event: MouseEvent): void {

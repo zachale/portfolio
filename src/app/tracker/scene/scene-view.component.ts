@@ -45,12 +45,11 @@ export class SceneViewComponent implements AfterViewInit, OnDestroy {
     // three.js lives in its own chunk so the numbers can paint before the scene has loaded.
     const { TrackerScene } = await import("./tracker-scene");
     if (this.destroyed) return;
-    const finePointer = matchMedia("(pointer: fine)").matches;
     const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
     try {
       // The render loop runs outside Angular so 60 frames a second don't trigger change detection.
       this.scene = this.zone.runOutsideAngular(() => new TrackerScene(this.host().nativeElement, {
-        interactive: finePointer,
+        highDetail: matchMedia("(pointer: fine)").matches,
         reducedMotion,
         onAtmosphere: (a) => this.zone.run(() => this.atmosphere.emit(a)),
       }));

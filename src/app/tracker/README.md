@@ -3,9 +3,9 @@
 A private dashboard for the lakeside solar tracker, served at `/tracker` on this site and at the
 root of `tracker.zachlegesse.ca`. The centrepiece is a three.js model of the real tracker on its
 boardwalk: the array tilts to the latest reported position, the sky follows the real sun at the
-site, and the anemometer spins with the last gust. Status and panel extension sit above the scene,
-temperature and wind below it, and the history charts underneath replay any moment back into the
-scene when you hover or tap them.
+site, and the anemometer spins with the last gust. The camera is fixed and the canvas takes no
+input, so it never gets in the way of scrolling on a phone. Status and panel extension sit above
+the scene, temperature and wind below it, and the history charts underneath.
 
 The tracker's firmware, the API this page reads, and its deploy and user-management scripts live
 in [zachale/solar-tracker](https://github.com/zachale/solar-tracker) under `portal/` and

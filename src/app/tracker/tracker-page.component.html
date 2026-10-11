@@ -51,7 +51,7 @@
         <div class="scrim-top pointer-events-none absolute inset-x-0 top-0 h-[58%]"></div>
         <div class="scrim-bottom pointer-events-none absolute inset-x-0 bottom-0 h-[40%]"></div>
 
-        @if (shown(); as r) {
+        @if (latest(); as r) {
           <div class="absolute inset-x-0 top-0 z-10 grid grid-cols-[minmax(0,1fr)_auto] gap-4 p-4 pt-[max(76px,calc(env(safe-area-inset-top)+64px))] sm:p-6 sm:pt-20 lg:p-8">
             <div class="rise min-w-0">
               <p class="eyebrow on-scene-2 flex items-center gap-2">
@@ -61,17 +61,13 @@
                 Status
               </p>
               <p class="stat mt-3 text-[30px] tracking-[-0.02em] sm:text-[44px] lg:text-[52px]">{{ statusMeta[r.status].label }}</p>
-              @if (hovered()) {
-                <p class="on-scene-2 mt-2 max-w-[26ch] text-[13px] leading-snug">{{ statusMeta[r.status].detail }}</p>
-              } @else {
-                @if (since()) {
-                  <p class="mt-2 text-[14px] font-semibold">Since {{ since() }}</p>
-                }
-                @if (freshness(); as fresh) {
-                  <p class="on-scene-2 mt-1 flex items-center gap-1.5 text-[13px] font-medium" role="status">
-                    <span class="freshness-dot" [attr.data-tone]="fresh.tone" aria-hidden="true"></span>{{ fresh.label }}
-                  </p>
-                }
+              @if (since()) {
+                <p class="mt-2 text-[14px] font-semibold">Since {{ since() }}</p>
+              }
+              @if (freshness(); as fresh) {
+                <p class="on-scene-2 mt-1 flex items-center gap-1.5 text-[13px] font-medium" role="status">
+                  <span class="freshness-dot" [attr.data-tone]="fresh.tone" aria-hidden="true"></span>{{ fresh.label }}
+                </p>
               }
             </div>
             <div class="rise flex w-[148px] flex-col items-end text-right sm:w-[200px] lg:w-[224px]" style="animation-delay: 60ms">
@@ -90,7 +86,7 @@
                 {{ r.temperature.toFixed(1) }}<span class="unit on-scene-2 text-[18px] sm:text-[20px]">°C</span>
               </p>
               <p class="on-scene-2 mt-1.5 min-h-[18px] text-[13px]">
-                @if (!hovered() && today().minTemperature !== null) {
+                @if (today().minTemperature !== null) {
                   Low {{ today().minTemperature!.toFixed(0) }}° · High {{ today().maxTemperature!.toFixed(0) }}°
                 }
               </p>
@@ -128,16 +124,6 @@
           </div>
         }
 
-        @if (replayLabel(); as label) {
-          <div class="absolute inset-x-0 bottom-[128px] z-20 flex justify-center px-4 sm:bottom-[148px] lg:bottom-[164px]">
-            <div class="popover flex items-center gap-2 rounded-full py-1 pl-4 pr-1 text-[14px] font-medium" role="status">
-              <tracker-icon name="clock" [size]="16" />
-              <span>Replaying {{ label }}</span>
-              <button type="button" class="btn-primary ml-1 min-h-[44px] rounded-full px-4 text-[14px]" (click)="hovered.set(null)"
-                aria-label="Back to live">Live</button>
-            </div>
-          </div>
-        }
       </section>
 
       <main class="relative z-10 space-y-6 px-4 pb-8 pt-2 sm:px-6 lg:px-0 lg:pt-[68px]">
@@ -173,7 +159,7 @@
         </section>
 
         <tracker-history-card [readings]="readings()" [days]="days()" [loading]="loading()"
-          (daysChange)="selectDays($event)" (hover)="hovered.set($event)" />
+          (daysChange)="selectDays($event)" />
 
       </main>
     </div>

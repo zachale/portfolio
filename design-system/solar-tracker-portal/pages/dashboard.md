@@ -16,11 +16,11 @@ Its landing-page pattern and light-mode component specs do not apply to this pag
 ## Layout Overrides
 
 - **Pattern:** a live 3D scene of the tracker with the numbers over it, then cards. Not a landing page: no "How it works" or CTA sections.
-- **Order:** header (brand, freshness, sign-in requests, account) → hero scene → Today tiles → History card → footer.
+- **Order:** sign-in requests and account buttons (floating, top right) → hero scene → Today tiles → History card. No brand, title or footer: everyone who opens it knows what it is.
 - **Hero hierarchy:** status and percent extended over the sky (top); temperature and wind over the ground (bottom). The tracker sits in the band between them (`dashboardFraming`).
-- **Phone (< 1024 px):** edge-to-edge hero, `clamp(540px, 100svh − 140px, 680px)` tall so the next card peeks; the scrims fade into the page at the top and bottom. 16 px gutters (24 px from 640 px).
-- **Desktop (≥ 1024 px):** sticky header; grid `1.5fr | minmax(400px, 1fr)`; the hero is a sticky 24 px-radius card filling the viewport height, so the scene stays visible while scrubbing the history on the right. Max width 1680 px.
-- **Replay:** hovering or tapping the history replays that moment in the hero, with a "Replaying … / Live" chip above the bottom numbers.
+- **Phone (< 1024 px):** edge-to-edge hero, `clamp(560px, 100svh − 64px, 740px)` tall so the next card peeks; the scrims fade into the page at the top and bottom. 16 px gutters (24 px from 640 px).
+- **Desktop (≥ 1024 px):** grid `1.5fr | minmax(400px, 1fr)`; the hero is a sticky 24 px-radius card filling the viewport height; the buttons sit above the right column. Max width 1680 px.
+- **Scene:** always shows the latest reading from a fixed camera; it takes no pointer or touch input and nothing in it moves except the array, the sun and the anemometer.
 
 ## Color Overrides
 
@@ -64,4 +64,5 @@ Its landing-page pattern and light-mode component specs do not apply to this pag
 - Status colours used for anything but status, or status shown by colour alone.
 - Muted text placed directly on the scene, or a scrim that is not measured against a daytime sky.
 - Dual-axis charts; series colours outside the validated set.
-- Touch targets under 44 px; hover-only behaviour (tap must replay too).
+- Touch targets under 44 px; hover-only behaviour.
+- Anything on the scene canvas that captures touch: it sits under the page's scroll on phones.
