@@ -94,7 +94,7 @@
                   {{ kmh(r.windMs).toFixed(0) }}<span class="unit on-scene-2 text-[18px] sm:text-[20px]"> km/h</span>
                 </p>
                 <p class="on-scene-2 mt-1.5 min-h-[18px] text-[13px]">
-                  @if (today().peakWindMs !== null) { Today's peak {{ kmh(today().peakWindMs!).toFixed(0) }} km/h }
+                  @if (today().peakWindMs !== null) { Peak {{ kmh(today().peakWindMs!).toFixed(0) }} km/h }
                 </p>
               } @else {
                 <p class="stat mt-2 text-[24px] leading-[32px] sm:text-[28px] sm:leading-[40px]">Sensor off</p>
