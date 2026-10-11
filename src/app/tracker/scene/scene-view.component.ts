@@ -2,7 +2,8 @@ import {
   AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, NgZone, OnDestroy, effect, input, output, signal, viewChild,
 } from "@angular/core";
 
-import type { Atmosphere, Framing, SceneMoment, TrackerScene } from "./tracker-scene";
+import type { Framing } from "./framing";
+import type { Atmosphere, SceneMoment, TrackerScene } from "./tracker-scene";
 
 @Component({
   selector: "tracker-scene-view",

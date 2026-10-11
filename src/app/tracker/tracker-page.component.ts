@@ -6,9 +6,8 @@ import { AdminRequestsComponent } from "./admin/admin-requests.component";
 import { HistoryCardComponent } from "./history/history-card.component";
 import { LoginPanelComponent } from "./login/login-panel.component";
 import { SceneViewComponent } from "./scene/scene-view.component";
-import {
-  DASHBOARD_FRAMING, LOGIN_FRAMING_NARROW, LOGIN_FRAMING_WIDE, type Atmosphere, type Framing, type SceneMoment,
-} from "./scene/tracker-scene";
+import { DASHBOARD_FRAMING, Framing, LOGIN_FRAMING_NARROW, LOGIN_FRAMING_WIDE } from "./scene/framing";
+import type { Atmosphere, SceneMoment } from "./scene/tracker-scene";
 import {
   STATUS_META, Telemetry, kmh, relativeTime, siteTime, statusSince, summarizeDay,
 } from "./telemetry";

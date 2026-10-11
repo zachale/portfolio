@@ -3,6 +3,7 @@ import { Sky } from "three/examples/jsm/objects/Sky.js";
 import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js";
 
 import { TrackerStatus, STATUS_META } from "../telemetry";
+import { DASHBOARD_FRAMING, Framing, LOGIN_FRAMING_NARROW, LOGIN_FRAMING_WIDE } from "./framing";
 import { sunAt, sunDirection } from "./sun";
 
 /** Paints each instance in its id colour (see TrackerScene.placePlantings). */
@@ -79,17 +80,6 @@ export interface Atmosphere {
   night: number;
 }
 
-/** Where the tracker should sit in the canvas, as fractions of its width and height. */
-export interface Framing {
-  x: number;
-  y: number;
-}
-
-/** Between the numbers over the sky and the ones over the ground. */
-export const DASHBOARD_FRAMING: Framing = { x: 0.5, y: 0.57 };
-/** Clear of the sign-in card: above it on a phone, beside it on a wide screen. */
-export const LOGIN_FRAMING_NARROW: Framing = { x: 0.5, y: 0.3 };
-export const LOGIN_FRAMING_WIDE: Framing = { x: 0.68, y: 0.52 };
 
 // Every way the page shows the scene, as the canvas size in CSS pixels: the dashboard and the
 // sign-in screen, each on a phone and on a 1440 × 900 desktop. Anything no ray from any of
