@@ -168,24 +168,8 @@
     &:active { transform: scale(0.96); }
     &[aria-expanded="true"] { background: rgba(148, 163, 184, 0.22); }
   }
-  .badge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    display: grid;
-    place-items: center;
-    min-width: 20px;
-    height: 20px;
-    padding: 0 5px;
-    border-radius: 99px;
-    font-size: 12px;
-    font-weight: 700;
-    color: #ffffff;
-    background: var(--danger);
-    box-shadow: 0 0 0 2px var(--bg);
-  }
 
-  .btn-primary, .btn-secondary {
+  .btn-secondary {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -199,28 +183,11 @@
     &:active:not(:disabled) { transform: scale(0.98); }
     &:disabled { opacity: 0.45; }
   }
-  .btn-primary {
-    color: var(--on-accent);
-    background: var(--accent);
-    &:hover:not(:disabled) { background: var(--accent-hover); }
-  }
   .btn-secondary {
     color: var(--text-1);
     background: rgba(148, 163, 184, 0.1);
     border: 1px solid var(--border);
     &:hover:not(:disabled) { background: rgba(148, 163, 184, 0.18); }
-  }
-  .btn-lg { min-height: 52px; font-size: 16px; }
-
-  .link {
-    display: inline-flex;
-    align-items: center;
-    min-height: 44px;
-    color: var(--text-2);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-    transition: color var(--dur-fast);
-    &:hover { color: var(--text-1); }
   }
 
   .menu-item {
@@ -235,33 +202,6 @@
     font-weight: 500;
     transition: background var(--dur-fast);
     &:hover { background: rgba(148, 163, 184, 0.12); }
-  }
-
-  .field-label { display: block; font-size: 14px; font-weight: 600; color: var(--text-1); }
-  .field {
-    display: block;
-    width: 100%;
-    min-height: 52px;
-    padding: 0 16px;
-    border-radius: var(--radius-md);
-    font-size: 17px; // 16px or more keeps iOS from zooming on focus
-    color: var(--text-1);
-    background: rgba(var(--scrim), 0.6);
-    border: 1px solid var(--border-strong);
-    outline: none;
-    transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
-    &::placeholder { color: var(--text-3); }
-    &:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.3); }
-  }
-  .check-row {
-    display: flex;
-    min-height: 44px;
-    cursor: pointer;
-    align-items: center;
-    gap: 12px;
-    font-size: 14px;
-    color: var(--text-2);
-    input { width: 20px; height: 20px; flex: none; accent-color: var(--accent); }
   }
 
   // Segmented control: buttons with aria-pressed. The pill is drawn inside a full-height target.
@@ -374,22 +314,78 @@
     animation: tracker-shimmer 1.4s linear infinite;
   }
 
-  .waiting-orb {
+  .avatar {
+    display: grid;
     flex: none;
-    width: 36px;
-    height: 36px;
+    place-items: center;
+    width: 52px;
+    height: 52px;
     border-radius: 99px;
-    background: radial-gradient(circle at 35% 35%, #fde68a, var(--accent));
-    animation: tracker-breathe 2.4s ease-in-out infinite;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--on-accent);
+    background: radial-gradient(circle at 30% 30%, #fde68a, var(--accent));
+  }
+
+  // The phone's tab bar: a floating pill of frosted glass. A bright rim and an inner highlight
+  // along its top edge give it the thickness of glass, and a lens slides under the open tab.
+  .tab-bar {
+    --tab-width: 88px;
+    position: fixed;
+    bottom: calc(14px + env(safe-area-inset-bottom));
+    left: 50%;
+    z-index: 40;
+    display: flex;
+    gap: 4px;
+    padding: 6px;
+    border-radius: 99px;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.07));
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    box-shadow:
+      0 14px 34px rgba(2, 6, 23, 0.5),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+  }
+  .tab-lens {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    width: var(--tab-width);
+    height: calc(100% - 12px);
+    border-radius: 99px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.1));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), 0 4px 12px rgba(2, 6, 23, 0.3);
+    transform: translateX(calc(var(--tab-index, 0) * (var(--tab-width) + 4px)));
+    transition: transform 420ms cubic-bezier(0.3, 1.4, 0.5, 1);
+  }
+  .tab-item {
+    position: relative;
+    display: flex;
+    width: var(--tab-width);
+    height: 54px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    color: rgba(226, 232, 240, 0.72);
+    transition: color var(--dur-fast);
+    &[aria-current="page"] { color: #ffffff; }
+    &:active { transform: scale(0.96); }
   }
 
   .rise { animation: tracker-rise var(--dur-enter) var(--ease-out) both; }
 
   :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
-  .field:focus-visible { outline: none; }
 
   @media (prefers-reduced-motion: reduce) {
-    .rise, .shimmer, .waiting-orb, .popover, .is-loading .tile dd::after { animation: none; }
+    .rise, .shimmer, .popover, .is-loading .tile dd::after { animation: none; }
     *, *::before { transition-duration: 0s !important; }
   }
 }
@@ -423,11 +419,6 @@
 
 @keyframes tracker-shimmer {
   to { background-position: -200% 0; }
-}
-
-@keyframes tracker-breathe {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.45); }
-  50% { box-shadow: 0 0 0 12px rgba(251, 191, 36, 0); }
 }
 
 @keyframes tracker-rise {

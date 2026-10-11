@@ -5,54 +5,50 @@
     <span class="sr-only">Loading the solar tracker</span>
   </div>
 } @else if (session() === null) {
-  <!-- Signed out: the live scene behind the sign-in card. -->
+  <!-- No session: the live scene behind a note to ask Zach for a link. -->
   <div class="relative h-[100svh] min-h-[640px] overflow-hidden">
     <tracker-scene-view class="absolute inset-0" [moment]="moment()" [framing]="loginFraming()" (atmosphere)="atmosphere.set($event)" />
     <div class="scrim-top pointer-events-none absolute inset-x-0 top-0 h-36" style="--scrim-top-start: 0.82"></div>
     <div class="pointer-events-none absolute inset-x-0 bottom-0 h-[72%] lg:hidden"
       style="background: linear-gradient(to top, var(--bg) 40%, transparent)"></div>
     <div class="absolute inset-x-0 bottom-0 z-10 px-4 pb-[max(16px,env(safe-area-inset-bottom))] sm:px-6 lg:inset-y-0 lg:left-10 lg:right-auto lg:flex lg:w-[440px] lg:items-center lg:px-0 lg:pb-0">
-      <tracker-login-panel class="rise w-full" (signedIn)="onSignedIn($event)" />
+      <tracker-access-panel class="rise w-full" [linkFailed]="linkFailed()" />
     </div>
   </div>
 } @else {
-  <div class="relative mx-auto max-w-[1680px] lg:px-6">
+  <!-- Phones show one section at a time, chosen in the tab bar; desktop shows them all. -->
+  <div class="relative mx-auto max-w-[1680px] pb-[calc(96px+env(safe-area-inset-bottom))] lg:px-6 lg:pb-0">
     <h1 class="sr-only">Solar tracker</h1>
-    <!-- Only the controls: on phones they float over the scene, on desktop over the right column. -->
-    <header class="absolute right-4 top-[max(16px,env(safe-area-inset-top))] z-30 sm:right-6 lg:top-6">
-      <div class="flex items-center gap-2">
-        @if (session()?.admin) {
-          <tracker-admin-requests />
+    <!-- Desktop only: the account button over the right column. Phones use the Profile tab. -->
+    <header class="absolute right-6 top-6 z-30 hidden lg:block">
+      <div #accountMenu class="relative">
+        <button type="button" class="icon-button text-[15px] font-bold" (click)="menuOpen.set(!menuOpen())"
+          [attr.aria-expanded]="menuOpen()" aria-controls="tracker-account-menu" [attr.aria-label]="'Account: ' + session()?.name">
+          {{ session()?.name?.charAt(0) ?? "·" }}
+        </button>
+        @if (menuOpen()) {
+          <div id="tracker-account-menu" class="popover absolute right-0 top-[52px] z-30 w-60 p-2">
+            <p class="px-3 pb-2 pt-1 text-[13px] text-2">
+              Signed in as <span class="font-semibold" style="color: var(--text-1)">{{ session()?.name }}</span>
+            </p>
+            <button type="button" class="menu-item" (click)="signOut()">
+              <tracker-icon name="logout" [size]="18" /> Sign out
+            </button>
+          </div>
         }
-        <div #accountMenu class="relative">
-          <button type="button" class="icon-button text-[15px] font-bold" (click)="menuOpen.set(!menuOpen())"
-            [attr.aria-expanded]="menuOpen()" aria-controls="tracker-account-menu" [attr.aria-label]="'Account: ' + session()?.name">
-            {{ session()?.name?.charAt(0) ?? "·" }}
-          </button>
-          @if (menuOpen()) {
-            <div id="tracker-account-menu" class="popover absolute right-0 top-[52px] z-30 w-60 p-2">
-              <p class="px-3 pb-2 pt-1 text-[13px] text-2">
-                Signed in as <span class="font-semibold" style="color: var(--text-1)">{{ session()?.name }}</span>
-              </p>
-              <button type="button" class="menu-item" (click)="signOut()">
-                <tracker-icon name="logout" [size]="18" /> Sign out
-              </button>
-            </div>
-          }
-        </div>
       </div>
     </header>
 
     <div class="lg:grid lg:grid-cols-[minmax(0,1.5fr)_minmax(400px,1fr)] lg:gap-6 lg:py-6">
       <!-- The scene, with the two numbers that matter most over the sky and the weather over the ground. -->
-      <section class="hero relative h-[clamp(560px,calc(100svh-64px),740px)] overflow-hidden lg:sticky lg:top-6 lg:h-[calc(100svh-48px)] lg:min-h-[600px]"
-        aria-label="Live view of the tracker">
+      <section class="hero relative h-[clamp(520px,calc(100svh-96px-env(safe-area-inset-bottom)),740px)] overflow-hidden lg:sticky lg:top-6 lg:h-[calc(100svh-48px)] lg:min-h-[600px]"
+        [class]="onlyOn('home')" aria-label="Live view of the tracker">
         <tracker-scene-view class="absolute inset-0" [moment]="moment()" [framing]="dashboardFraming" (atmosphere)="atmosphere.set($event)" />
         <div class="scrim-top pointer-events-none absolute inset-x-0 top-0 h-[42%]"></div>
         <div class="scrim-bottom pointer-events-none absolute inset-x-0 bottom-0 h-[30%]"></div>
 
         @if (latest(); as r) {
-          <div class="absolute inset-x-0 top-0 z-10 grid grid-cols-[minmax(0,1fr)_auto] gap-4 p-4 pt-[max(76px,calc(env(safe-area-inset-top)+64px))] sm:p-6 sm:pt-20 lg:p-8">
+          <div class="absolute inset-x-0 top-0 z-10 grid grid-cols-[minmax(0,1fr)_auto] gap-4 p-4 pt-[max(20px,calc(env(safe-area-inset-top)+12px))] sm:p-6 lg:p-8">
             <div class="rise min-w-0">
               <p class="eyebrow on-scene-2 flex items-center gap-2">
                 <span class="status-badge" [style.--status]="statusMeta[r.status].color" aria-hidden="true">
@@ -105,7 +101,7 @@
             </div>
           </div>
         } @else if (loading()) {
-          <div class="absolute inset-x-0 top-0 z-10 grid grid-cols-[minmax(0,1fr)_148px] gap-4 p-4 pt-[76px] sm:grid-cols-[minmax(0,1fr)_200px] sm:p-6 sm:pt-20 lg:grid-cols-[minmax(0,1fr)_224px] lg:p-8" aria-hidden="true">
+          <div class="absolute inset-x-0 top-0 z-10 grid grid-cols-[minmax(0,1fr)_148px] gap-4 p-4 pt-[max(20px,calc(env(safe-area-inset-top)+12px))] sm:grid-cols-[minmax(0,1fr)_200px] sm:p-6 lg:grid-cols-[minmax(0,1fr)_224px] lg:p-8" aria-hidden="true">
             <div class="shimmer h-[128px] rounded-[var(--radius-lg)]"></div>
             <div class="shimmer h-[128px] rounded-[var(--radius-lg)]"></div>
           </div>
@@ -115,7 +111,7 @@
           </div>
           <span class="sr-only" role="status">Loading the latest reading</span>
         } @else if (!failed()) {
-          <div class="absolute inset-x-0 top-0 z-10 p-4 pt-[76px] sm:p-6 sm:pt-20 lg:p-8">
+          <div class="absolute inset-x-0 top-0 z-10 p-4 pt-[max(20px,calc(env(safe-area-inset-top)+12px))] sm:p-6 lg:p-8">
             <p class="eyebrow on-scene-2">Status</p>
             <p class="stat mt-3 text-[30px] tracking-[-0.02em] sm:text-[44px]">No readings</p>
             <p class="on-scene-2 mt-2 max-w-[32ch] text-[14px] leading-snug">
@@ -136,7 +132,7 @@
           </div>
         }
 
-        <section aria-labelledby="tracker-today-title">
+        <section aria-labelledby="tracker-today-title" [class]="onlyOn('home')">
           <h2 id="tracker-today-title" class="section-title">Today</h2>
           <dl class="mt-3 grid grid-cols-2 gap-3" [class.is-loading]="loading() && !readings().length" [attr.aria-busy]="loading()">
             <div class="card tile">
@@ -158,10 +154,32 @@
           </dl>
         </section>
 
-        <tracker-history-card [readings]="rangeReadings()" [hours]="hours()" [end]="rangeEnd()" [loading]="loading()"
+        <tracker-history-card class="max-lg:pt-[max(8px,env(safe-area-inset-top))]" [class]="onlyOn('graphs')"
+          [readings]="rangeReadings()" [hours]="hours()" [end]="rangeEnd()" [loading]="loading()"
           (hoursChange)="selectHours($event)" />
+
+        @if (tab() === "profile") {
+          <section class="pt-[max(8px,env(safe-area-inset-top))] lg:hidden" aria-labelledby="tracker-profile-title">
+            <h2 id="tracker-profile-title" class="section-title">Profile</h2>
+            <div class="card mt-3 flex items-center gap-4 p-5">
+              <span class="avatar" aria-hidden="true">{{ session()?.name?.charAt(0) }}</span>
+              <div class="min-w-0">
+                <p class="truncate text-[17px] font-semibold">{{ session()?.name }}</p>
+                <p class="mt-0.5 text-[13px] text-2">Signed in on this device</p>
+              </div>
+            </div>
+            <button type="button" class="btn-secondary mt-4 w-full" (click)="signOut()">
+              <tracker-icon name="logout" [size]="18" /> Sign out
+            </button>
+            <p class="mt-3 px-1 text-[13px] leading-relaxed text-2">
+              To sign back in, open your personal link again.
+            </p>
+          </section>
+        }
 
       </main>
     </div>
+
+    <tracker-tab-bar class="lg:hidden" [current]="tab()" (select)="selectTab($event)" />
   </div>
 }

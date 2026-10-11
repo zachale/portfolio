@@ -1,10 +1,12 @@
 import {
   ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, computed, inject, signal, viewChild,
 } from "@angular/core";
+import { toSignal } from "@angular/core/rxjs-interop";
+import { ActivatedRoute, Router } from "@angular/router";
+import { map } from "rxjs";
 
-import { AdminRequestsComponent } from "./admin/admin-requests.component";
+import { AccessPanelComponent } from "./access/access-panel.component";
 import { HistoryCardComponent } from "./history/history-card.component";
-import { LoginPanelComponent } from "./login/login-panel.component";
 import { SceneViewComponent } from "./scene/scene-view.component";
 import { DASHBOARD_FRAMING, Framing, LOGIN_FRAMING_NARROW, LOGIN_FRAMING_WIDE } from "./scene/framing";
 import type { Atmosphere, SceneMoment } from "./scene/tracker-scene";
@@ -14,6 +16,7 @@ import {
 import { Session, TrackerApi } from "./tracker-api.service";
 import { ExtensionGaugeComponent } from "./ui/extension-gauge.component";
 import { IconComponent } from "./ui/icon.component";
+import { TabBarComponent, TrackerTab } from "./ui/tab-bar.component";
 
 const REFRESH_MS = 2 * 60 * 1000;
 const fetchDays = (hours: number) => Math.max(1, Math.ceil(hours / 24));
@@ -25,8 +28,8 @@ const OFFLINE_MS = 3 * 60 * 60 * 1000;
   selector: "app-tracker-page",
   standalone: true,
   imports: [
-    SceneViewComponent, LoginPanelComponent, AdminRequestsComponent, HistoryCardComponent, ExtensionGaugeComponent,
-    IconComponent,
+    SceneViewComponent, AccessPanelComponent, HistoryCardComponent, ExtensionGaugeComponent, IconComponent,
+    TabBarComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: "./tracker-page.component.html",
@@ -39,8 +42,20 @@ const OFFLINE_MS = 3 * 60 * 60 * 1000;
 })
 export class TrackerPageComponent implements OnInit, OnDestroy {
   private readonly api = inject(TrackerApi);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   protected readonly session = signal<Session | null | undefined>(undefined);
+  /** The device opened a personal link that the API turned down. */
+  protected readonly linkFailed = signal(false);
+  /**
+   * The phone's current section, kept in the URL (?view=graphs) so the back button and a reload
+   * behave. On desktop every section is on screen at once and this is ignored.
+   */
+  protected readonly tab = toSignal(
+    this.route.queryParamMap.pipe(map((params) => parseTab(params.get("view")))),
+    { initialValue: parseTab(new URLSearchParams(location.search).get("view")) },
+  );
   /** The history range; the last day by default. */
   protected readonly hours = signal(24);
   private readonly cache = signal(new Map<number, Telemetry>());
@@ -105,6 +120,17 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
   private previousBackground = "";
   private hadMaterialTypography = false;
 
+  /** Hides a section on phones unless its tab is open; desktop always shows it. */
+  protected onlyOn(tab: TrackerTab): string {
+    return this.tab() === tab ? "" : "max-lg:hidden";
+  }
+
+  protected selectTab(tab: TrackerTab): void {
+    if (tab === this.tab()) return;
+    this.router.navigate([], { relativeTo: this.route, queryParams: { view: tab === "home" ? null : tab } });
+    window.scrollTo({ top: 0 });
+  }
+
   async ngOnInit(): Promise<void> {
     // The page is dark edge to edge, including the overscroll area behind it, and sets its own type.
     this.previousBackground = document.body.style.background;
@@ -116,11 +142,7 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
     this.refreshTimer = window.setInterval(() => {
       if (this.session() && document.visibilityState === "visible") this.load(fetchDays(this.hours()), true);
     }, REFRESH_MS);
-    try {
-      this.session.set(await this.api.session());
-    } catch {
-      this.session.set(null);
-    }
+    this.session.set(await this.signIn());
     if (this.session()) this.load(fetchDays(this.hours()));
   }
 
@@ -136,9 +158,26 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
     if (this.menuOpen() && !this.accountMenu()?.nativeElement.contains(event.target as Node)) this.menuOpen.set(false);
   }
 
-  protected onSignedIn(session: Session): void {
-    this.session.set(session);
-    this.load(fetchDays(this.hours()));
+  /**
+   * A personal link carries its key in the URL fragment (#key=…), which browsers never send to a
+   * server, so it stays out of logs. Take it off the address bar straight away, so it isn't left
+   * in the history or on a screenshot, then trade it for a session.
+   */
+  private async signIn(): Promise<Session | null> {
+    const key = new URLSearchParams(location.hash.slice(1)).get("key");
+    if (key) {
+      history.replaceState(history.state, "", location.pathname + location.search);
+      try {
+        return await this.api.link(key);
+      } catch {
+        this.linkFailed.set(true);
+      }
+    }
+    try {
+      return await this.api.session();
+    } catch {
+      return null;
+    }
   }
 
   protected async signOut(): Promise<void> {
@@ -146,6 +185,7 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
     await this.api.logout().catch(() => undefined);
     this.cache.set(new Map());
     this.session.set(null);
+    this.selectTab("home");
   }
 
   protected selectHours(hours: number): void {
@@ -175,4 +215,8 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
       if (days === fetchDays(this.hours())) this.loading.set(false);
     }
   }
+}
+
+function parseTab(value: string | null): TrackerTab {
+  return value === "graphs" || value === "profile" ? value : "home";
 }

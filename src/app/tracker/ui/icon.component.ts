@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, Component, input } from "@angular/core";
 
 export type IconName =
-  | "sun" | "moon" | "wind" | "pause" | "thermometer" | "expand" | "close" | "bell"
-  | "clock" | "message" | "copy" | "table" | "chart" | "logout" | "refresh";
+  | "sun" | "moon" | "wind" | "pause" | "thermometer" | "expand" | "close" | "table" | "chart" | "logout"
+  | "refresh" | "home" | "user";
 
 // Stroke icons drawn on a 24-unit grid; they inherit currentColor.
 const PATHS: Record<IconName, string> = {
@@ -13,14 +13,12 @@ const PATHS: Record<IconName, string> = {
   thermometer: "M14 14.8V5a2 2 0 1 0-4 0v9.8a4 4 0 1 0 4 0Z",
   expand: "M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7",
   close: "M6 6l12 12M18 6 6 18",
-  bell: "M6 9a6 6 0 1 1 12 0c0 5 2 6.5 2 6.5H4S6 14 6 9ZM10 19.5a2 2 0 0 0 4 0",
-  clock: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18ZM12 7v5l3 2",
-  message: "M4 5h16v11H8l-4 4V5Z",
-  copy: "M9 9h11v11H9zM5 15H4V4h11v1",
   table: "M3 5h18v14H3zM3 10h18M3 15h18M9 5v14",
   chart: "M3 3v18h18M7 15l4-5 3 3 5-7",
   logout: "M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11",
   refresh: "M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7",
+  home: "M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1v-9.5Z",
+  user: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM4.5 20.5c1.2-3.6 4-5.5 7.5-5.5s6.3 1.9 7.5 5.5",
 };
 
 @Component({

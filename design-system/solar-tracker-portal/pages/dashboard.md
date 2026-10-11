@@ -16,7 +16,9 @@ Its landing-page pattern and light-mode component specs do not apply to this pag
 ## Layout Overrides
 
 - **Pattern:** a live 3D scene of the tracker with the numbers over it, then cards. Not a landing page: no "How it works" or CTA sections.
-- **Order:** sign-in requests and account buttons (floating, top right) → hero scene → Today tiles → History card. No brand, title or footer: everyone who opens it knows what it is.
+- **Order:** hero scene → Today tiles → History card. No brand, title or footer: everyone who opens it knows what it is.
+- **Phone navigation:** a floating liquid-glass tab bar (Home · Graphs · Profile), 14 px above the safe area, with a lens that springs to the open tab. Each section is its own screen; the hero ends above the bar so the bottom numbers are never covered.
+- **Desktop:** no tab bar; an account button (sign out) sits above the right column.
 - **Hero hierarchy:** status and percent extended over the sky (top); temperature and wind over the ground (bottom). The tracker sits in the band between them (`dashboardFraming`).
 - **Phone (< 1024 px):** edge-to-edge hero, `clamp(560px, 100svh − 64px, 740px)` tall so the next card peeks; the scrims fade into the page at the top and bottom. 16 px gutters (24 px from 640 px).
 - **Desktop (≥ 1024 px):** grid `1.5fr | minmax(400px, 1fr)`; the hero is a sticky 24 px-radius card filling the viewport height; the buttons sit above the right column. Max width 1680 px.

@@ -16,7 +16,7 @@ in [zachale/solar-tracker](https://github.com/zachale/solar-tracker) under `port
 ```
 tracker ──POST /data──▶ Cloud Run test-image ──▶ gs://…-telemetry/raw/<day>/*.ndjson
                                                           │ read-only
-browser ──/api/tracker/*──▶ Netlify proxy ──▶ Cloud Run tracker-api ──▶ gs://…-portal (users, requests)
+browser ──/api/tracker/*──▶ Netlify proxy ──▶ Cloud Run tracker-api ──▶ gs://…-portal (users)
 ```
 
 `src/_redirects` proxies `/api/tracker/*` to the API, so the session cookie is first-party on
@@ -25,13 +25,23 @@ repo holds a secret.
 
 ## Signing in
 
-There are no passwords and no texted codes. Someone on the allowlist enters their phone number
-and the page shows "Waiting for Zach". Zach sees the request under the bell icon (or with
-`tools/portal/requests.sh` in the solar-tracker repo) and taps Approve, and the waiting browser
-signs itself in. The request is tied to that browser by an HttpOnly cookie and stays open for
-24 hours, so the visitor can close the tab and come back. "Keep me signed in" holds the session
-for 90 days, renewed while it is in use; removing a number from the allowlist signs that person
-out on their next request.
+There is no sign-in screen. Zach gives each person a personal link
+(`https://zachlegesse.ca/tracker#key=…`, made with `tools/portal/users.sh` in the solar-tracker
+repo). Opening it signs in that device for good: the page takes the key off the address bar at
+once, trades it for a session cookie, and the cookie renews itself while it is used. The key is
+in the URL fragment, which browsers never send to a server, so it stays out of logs. A device
+without a session sees a note to ask Zach for a link.
+
+A link is a bearer credential: whoever has it is that person. That is fine for this data.
+Re-issuing someone's link signs out every device that used the old one; removing them signs
+them out everywhere.
+
+## Layout
+
+On a phone the page is three sections behind a floating glass tab bar: Home (the scene and
+today's numbers), Graphs (the history) and Profile (who is signed in, and sign out). The open
+section is in the URL (`?view=graphs`), so back and reload behave. On desktop everything is on
+one screen, with an account button for signing out.
 
 ## Code map
 
@@ -42,8 +52,8 @@ out on their next request.
 | `scene/sun.ts` | Sun position at the site (SunCalc), which drives sky, light and shadows |
 | `scene/scene-view.component.ts` | Angular wrapper; runs the render loop outside the zone |
 | `history/` | ECharts small multiples (status, panel %, temperature, wind) and the expanded view with a table |
-| `login/` | Ask for access, then wait for approval (polls every 4 s) |
-| `admin/` | Sign-in requests for Zach to approve or deny |
+| `access/` | What a device without a session sees |
+| `ui/tab-bar.component.ts` | The phone's glass tab bar |
 | `telemetry.ts` | Types, status labels and colours, and the derived numbers (today, status since, spans) |
 | `tracker.scss` | Portal styles and design tokens, imported globally and scoped under `.tracker-root` |
 | `/design-system/solar-tracker-portal/` | The design system behind those tokens: `MASTER.md`, overridden by `pages/dashboard.md` |
