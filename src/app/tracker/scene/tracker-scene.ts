@@ -101,6 +101,22 @@ function inLake(x: number, z: number, margin = 0): boolean {
   return stretched < radius + margin;
 }
 
+// The camera never moves, so nothing it cannot see is built. Its view is narrowest on a phone
+// (where it also stands furthest back) and widest on desktop and the sign-in screen; this wedge,
+// from the furthest standing point, covers them all with room for shadows cast in from the sides.
+const VIEW_APEX = 14;
+// The pine model is 1 tall and 0.74 across its lowest tier; its impostor card has a little room.
+const IMPOSTOR_HEIGHT = 1.12;
+const IMPOSTOR_ASPECT = 0.7;
+const VIEW_HALF_ANGLE = THREE.MathUtils.degToRad(40);
+function inView(x: number, z: number, radius: number): boolean {
+  const dx = x - Math.sin(CAMERA_AZIMUTH) * VIEW_APEX;
+  const dz = z - Math.cos(CAMERA_AZIMUTH) * VIEW_APEX;
+  const along = -(dx * Math.sin(CAMERA_AZIMUTH) + dz * Math.cos(CAMERA_AZIMUTH));
+  const across = Math.abs(dx * Math.cos(CAMERA_AZIMUTH) - dz * Math.sin(CAMERA_AZIMUTH));
+  return along > -radius && across < Math.tan(VIEW_HALF_ANGLE) * Math.max(0, along) + radius / Math.cos(VIEW_HALF_ANGLE);
+}
+
 // The few metres of marsh right at the camera's feet: a shrub there fills half the frame.
 function atCameraFeet(x: number, z: number): boolean {
   const along = x * Math.sin(CAMERA_AZIMUTH) + z * Math.cos(CAMERA_AZIMUTH);
@@ -554,35 +570,28 @@ export class TrackerScene {
     }
     const foliage = mergeGeometries(tiers)!;
     const trunk = new THREE.CylinderGeometry(0.012, 0.022, 1, 5).translate(0, 0.5, 0);
+    const greens = [0x24401f, 0x2e4d24, 0x1e3a22, 0x35552a];
 
+    // Pines with real geometry, close enough for their tiers to read: only where the camera
+    // looks, and never between it and the tracker.
     const trees: THREE.Matrix4[] = [];
     const tints: THREE.Color[] = [];
-    const greens = [0x24401f, 0x2e4d24, 0x1e3a22, 0x35552a];
-    const place = (count: number, rMin: number, rMax: number, hMin: number, hMax: number) => {
-      let placed = 0, attempts = 0;
-      while (placed < count && attempts++ < count * 30) {
-        const angle = rand() * Math.PI * 2;
-        const r = rMin + rand() * (rMax - rMin);
-        const x = Math.cos(angle) * r, z = Math.sin(angle) * r;
-        if (inLake(x, z, 3)) continue;
-        // Keep the view from the boardwalk to the tracker clear.
-        const toward = Math.atan2(x, z) - CAMERA_AZIMUTH;
-        const wrapped = Math.atan2(Math.sin(toward), Math.cos(toward));
-        if (Math.abs(wrapped) < 1.25 && r < 90) continue;
-        const height = hMin + rand() * (hMax - hMin);
-        const spread = 0.8 + rand() * 0.45;
-        trees.push(new THREE.Matrix4().compose(
-          new THREE.Vector3(x, 0, z),
-          new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), rand() * Math.PI * 2),
-          new THREE.Vector3(height * spread, height, height * spread),
-        ));
-        tints.push(new THREE.Color(greens[Math.floor(rand() * greens.length)]));
-        placed++;
-      }
-    };
-    place(60, 34, 85, 7, 14);
-    place(320, 75, 210, 9, 18);
-
+    for (let attempts = 0; trees.length < 190 && attempts < 40000; attempts++) {
+      const angle = rand() * Math.PI * 2;
+      const r = 24 + rand() * 64;
+      const x = Math.cos(angle) * r, z = Math.sin(angle) * r;
+      const height = 7 + rand() * 8;
+      const spread = 0.8 + rand() * 0.45;
+      const toward = Math.atan2(x, z) - CAMERA_AZIMUTH;
+      if (Math.abs(Math.atan2(Math.sin(toward), Math.cos(toward))) < 1.25) continue;
+      if (inLake(x, z, 3) || !inView(x, z, height * 0.34 * spread)) continue;
+      trees.push(new THREE.Matrix4().compose(
+        new THREE.Vector3(x, 0, z),
+        new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), rand() * Math.PI * 2),
+        new THREE.Vector3(height * spread, height, height * spread),
+      ));
+      tints.push(new THREE.Color(greens[Math.floor(rand() * greens.length)]));
+    }
     const foliageMesh = new THREE.InstancedMesh(
       foliage,
       this.plant(new THREE.MeshStandardMaterial({ roughness: 0.95, flatShading: true })),
@@ -595,6 +604,71 @@ export class TrackerScene {
       trunkMesh.setMatrixAt(i, matrix);
     });
     this.scene.add(foliageMesh, trunkMesh);
+
+    // Behind them, a deep forest of flat cut-outs: a picture of the same pine, rendered once,
+    // on cards turned to face the camera. At this distance nobody can tell, and a card is two
+    // triangles where a pine is a few hundred.
+    const card = new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0);
+    const material = this.plant(new THREE.MeshStandardMaterial({
+      map: this.pineImpostor(foliage, trunk), alphaTest: 0.5, roughness: 1, side: THREE.DoubleSide,
+    }));
+    const cards: THREE.Matrix4[] = [];
+    const cardTints: THREE.Color[] = [];
+    const cameraX = Math.sin(CAMERA_AZIMUTH) * VIEW_APEX, cameraZ = Math.cos(CAMERA_AZIMUTH) * VIEW_APEX;
+    for (let attempts = 0; cards.length < 1600 && attempts < 60000; attempts++) {
+      const angle = rand() * Math.PI * 2;
+      const r = 80 + rand() * 230;
+      const x = Math.cos(angle) * r, z = Math.sin(angle) * r;
+      const height = 9 + rand() * 10;
+      const width = height * IMPOSTOR_ASPECT * (0.85 + rand() * 0.35);
+      if (inLake(x, z, 2) || !inView(x, z, width)) continue;
+      const facing = Math.atan2(cameraX - x, cameraZ - z);
+      cards.push(new THREE.Matrix4().compose(
+        new THREE.Vector3(x, 0, z),
+        new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), facing),
+        // A mirrored card now and then, so the copies don't line up.
+        new THREE.Vector3(rand() < 0.5 ? -width : width, height, 1),
+      ));
+      cardTints.push(new THREE.Color(greens[Math.floor(rand() * greens.length)]).multiplyScalar(1.25));
+    }
+    const cardMesh = new THREE.InstancedMesh(card, material, cards.length);
+    cards.forEach((matrix, i) => {
+      cardMesh.setMatrixAt(i, matrix);
+      cardMesh.setColorAt(i, cardTints[i]);
+    });
+    this.scene.add(cardMesh);
+  }
+
+  /** One pine rendered side-on into a texture: white foliage, so each card's tint colours it. */
+  private pineImpostor(foliage: THREE.BufferGeometry, trunk: THREE.BufferGeometry): THREE.Texture {
+    const target = new THREE.WebGLRenderTarget(256, Math.round(256 / IMPOSTOR_ASPECT), {
+      samples: 4, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter,
+    });
+    const studio = new THREE.Scene();
+    studio.add(
+      new THREE.Mesh(foliage, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.95, flatShading: true })),
+      new THREE.Mesh(trunk, new THREE.MeshStandardMaterial({ color: 0x6b5a4a, roughness: 1 })),
+      new THREE.AmbientLight(0xffffff, 0.9),
+    );
+    const key = new THREE.DirectionalLight(0xffffff, 1.6);
+    key.position.set(-1, 2, 2);
+    studio.add(key);
+    const halfWidth = IMPOSTOR_HEIGHT * IMPOSTOR_ASPECT / 2;
+    const camera = new THREE.OrthographicCamera(-halfWidth, halfWidth, IMPOSTOR_HEIGHT, 0, 0.1, 10);
+    camera.position.set(0, 0.3, 5);
+    camera.lookAt(0, 0.3, 0);
+
+    const previousTarget = this.renderer.getRenderTarget();
+    const previousClear = this.renderer.getClearColor(new THREE.Color());
+    const previousAlpha = this.renderer.getClearAlpha();
+    this.renderer.setRenderTarget(target);
+    this.renderer.setClearColor(0x000000, 0);
+    this.renderer.clear();
+    this.renderer.render(studio, camera);
+    this.renderer.setRenderTarget(previousTarget);
+    this.renderer.setClearColor(previousClear, previousAlpha);
+    studio.traverse((o) => ((o as THREE.Mesh).material as THREE.Material | undefined)?.dispose());
+    return target.texture;
   }
 
   private buildUnderstory(): void {
@@ -615,7 +689,8 @@ export class TrackerScene {
     const tints: THREE.Color[] = [];
     const greens = [0x3f6a22, 0x4c7a28, 0x58872e, 0x66923a, 0x355d1f];
     let attempts = 0;
-    while (shrubs.length < 900 && attempts++ < 12000) {
+    // The same density as everywhere else; what falls outside the view is dropped, not moved.
+    for (let placed = 0; placed < 900 && attempts++ < 12000;) {
       const angle = rand() * Math.PI * 2;
       const r = 1.7 + Math.pow(rand(), 1.3) * 34;
       const x = Math.cos(angle) * r, z = Math.sin(angle) * r;
@@ -624,6 +699,8 @@ export class TrackerScene {
       const spread = new THREE.Vector3(size * (1 + rand() * 0.7), size * 0.8, size * (1 + rand() * 0.7));
       // Keep the whole bush (its jittered radius reaches 1.18) off the boards, not just its centre.
       if (onBoardwalk(x, z, Math.max(spread.x, spread.z) * 1.18 + 0.05)) continue;
+      placed++;
+      if (!inView(x, z, Math.max(spread.x, spread.z) * 1.18)) continue;
       shrubs.push(new THREE.Matrix4().compose(
         new THREE.Vector3(x, size * 0.2, z),
         new THREE.Quaternion().setFromEuler(new THREE.Euler(rand() * 0.4, rand() * 6, rand() * 0.4)),
@@ -644,11 +721,13 @@ export class TrackerScene {
     const head = new THREE.CapsuleGeometry(0.022, 0.12, 2, 6).translate(0, 0.98, 0);
     const reeds: THREE.Matrix4[] = [];
     attempts = 0;
-    while (reeds.length < 420 && attempts++ < 12000) {
+    for (let placed = 0; placed < 420 && attempts++ < 12000;) {
       const x = LAKE_CENTRE.x - 24 + rand() * 48, z = LAKE_CENTRE.y - 26 + rand() * 52;
       const nearShore = inLake(x, z, 3.5) && !inLake(x, z, 0.3);
       const scattered = !inLake(x, z, 1) && rand() < 0.07;
       if ((!nearShore && !scattered) || onBoardwalk(x, z, 0.45)) continue;
+      placed++;
+      if (!inView(x, z, 0.3)) continue;
       const height = 0.8 + rand() * 0.9;
       reeds.push(new THREE.Matrix4().compose(
         new THREE.Vector3(x, -0.1, z),
