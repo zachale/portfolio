@@ -8,11 +8,13 @@ import { IconComponent } from "../ui/icon.component";
 import { HistoryChartComponent } from "./history-chart.component";
 
 export const RANGES = [
-  { days: 1, label: "24H" },
-  { days: 7, label: "7D" },
-  { days: 30, label: "30D" },
-  { days: 60, label: "60D" },
+  { hours: 1, label: "1H" },
+  { hours: 24, label: "24H" },
+  { hours: 24 * 7, label: "7D" },
+  { hours: 24 * 30, label: "30D" },
 ] as const;
+// The card keeps to the short ranges; the expanded view offers all of them.
+const CARD_RANGES = RANGES.slice(0, 3);
 
 const TABLE_LIMIT = 400;
 
@@ -26,11 +28,15 @@ const TABLE_LIMIT = 400;
 })
 export class HistoryCardComponent {
   readonly readings = input.required<Reading[]>();
-  readonly days = input.required<number>();
+  readonly hours = input.required<number>();
   readonly loading = input(false);
-  readonly daysChange = output<number>();
+  readonly hoursChange = output<number>();
 
   protected readonly ranges = RANGES;
+  /** The card's ranges, plus a longer one picked in the expanded view so it still shows as selected. */
+  protected readonly cardRanges = computed(() =>
+    CARD_RANGES.some((r) => r.hours === this.hours()) ? CARD_RANGES : RANGES.filter((r) => CARD_RANGES.includes(r) || r.hours === this.hours()),
+  );
   protected readonly statusMeta = STATUS_META;
   protected readonly kmh = kmh;
   protected readonly format = (t: number) => siteDateTime.format(t);

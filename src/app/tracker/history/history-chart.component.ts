@@ -29,6 +29,7 @@ const GAP_MS = 20 * 60 * 1000;
 const INK = { primary: "#f8fafc", secondary: "#94a3b8", muted: "#8492a6", grid: "rgba(148,163,184,0.12)" };
 const FONT = "'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif";
 
+const minuteLabel = new Intl.DateTimeFormat("en-CA", { timeZone: SITE_TIME_ZONE, hour: "numeric", minute: "2-digit" });
 const hourLabel = new Intl.DateTimeFormat("en-CA", { timeZone: SITE_TIME_ZONE, hour: "numeric" });
 const dayLabel = new Intl.DateTimeFormat("en-CA", { timeZone: SITE_TIME_ZONE, month: "short", day: "numeric" });
 
@@ -65,7 +66,7 @@ function nearest(readings: Reading[], t: number): Reading | null {
 })
 export class HistoryChartComponent implements AfterViewInit, OnDestroy {
   readonly readings = input.required<Reading[]>();
-  readonly spanDays = input.required<number>();
+  readonly spanHours = input.required<number>();
   readonly expanded = input(false);
 
   private readonly el = viewChild.required<ElementRef<HTMLElement>>("chart");
@@ -76,9 +77,9 @@ export class HistoryChartComponent implements AfterViewInit, OnDestroy {
     effect(() => {
       // Read the inputs here so the effect re-runs when they change.
       const readings = this.readings();
-      const spanDays = this.spanDays();
+      const spanHours = this.spanHours();
       const expanded = this.expanded();
-      if (this.chart) this.render(readings, spanDays, expanded);
+      if (this.chart) this.render(readings, spanHours, expanded);
     });
   }
 
@@ -86,7 +87,7 @@ export class HistoryChartComponent implements AfterViewInit, OnDestroy {
     const readings = this.readings();
     if (!readings.length) return "No readings in this range";
     const last = readings[readings.length - 1];
-    return `Panel position, temperature and peak wind over ${this.spanDays()} day(s). Latest: ${last.percent}% extended, ${last.temperature} °C.`;
+    return `Panel position, temperature and peak wind over the last ${this.spanHours() < 48 ? `${this.spanHours()} hour(s)` : `${this.spanHours() / 24} days`}. Latest: ${last.percent}% extended, ${last.temperature} °C.`;
   }
 
   ngAfterViewInit(): void {
@@ -94,11 +95,11 @@ export class HistoryChartComponent implements AfterViewInit, OnDestroy {
       this.chart = echarts.init(this.el().nativeElement, null, { renderer: "canvas" });
       this.resizeObserver = new ResizeObserver(() => {
         this.chart?.resize();
-        this.render(this.readings(), this.spanDays(), this.expanded());
+        this.render(this.readings(), this.spanHours(), this.expanded());
       });
       this.resizeObserver.observe(this.el().nativeElement);
     });
-    this.render(this.readings(), this.spanDays(), this.expanded());
+    this.render(this.readings(), this.spanHours(), this.expanded());
   }
 
   ngOnDestroy(): void {
@@ -106,13 +107,14 @@ export class HistoryChartComponent implements AfterViewInit, OnDestroy {
     this.chart?.dispose();
   }
 
-  private render(readings: Reading[], spanDays: number, expanded: boolean): void {
+  private render(readings: Reading[], spanHours: number, expanded: boolean): void {
     const chart = this.chart;
     if (!chart) return;
     const height = this.el().nativeElement.clientHeight;
     const now = Date.now();
-    const min = now - spanDays * 86_400_000;
-    const labelFor = (t: number) => (spanDays <= 1 ? hourLabel.format(t) : dayLabel.format(t));
+    const min = now - spanHours * 3_600_000;
+    const labelFor = (t: number) =>
+      (spanHours <= 1 ? minuteLabel : spanHours <= 24 ? hourLabel : dayLabel).format(t);
 
     // Small multiples, one measure each: they have different units, so they never share a y axis.
     const metrics = [

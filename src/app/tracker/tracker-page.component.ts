@@ -15,6 +15,7 @@ import { ExtensionGaugeComponent } from "./ui/extension-gauge.component";
 import { IconComponent } from "./ui/icon.component";
 
 const REFRESH_MS = 2 * 60 * 1000;
+const fetchDays = (hours: number) => Math.max(1, Math.ceil(hours / 24));
 // The tracker uploads about every 15 minutes, so half an hour without one is worth a mention.
 const DELAYED_MS = 30 * 60 * 1000;
 const OFFLINE_MS = 3 * 60 * 60 * 1000;
@@ -39,7 +40,8 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
   private readonly api = inject(TrackerApi);
 
   protected readonly session = signal<Session | null | undefined>(undefined);
-  protected readonly days = signal(1);
+  /** The history range; one hour by default. */
+  protected readonly hours = signal(1);
   private readonly cache = signal(new Map<number, Telemetry>());
   protected readonly loading = signal(false);
   protected readonly failed = signal(false);
@@ -58,8 +60,13 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
   protected readonly statusMeta = STATUS_META;
   protected readonly kmh = kmh;
 
-  protected readonly telemetry = computed(() => this.cache().get(this.days()) ?? null);
+  protected readonly telemetry = computed(() => this.cache().get(fetchDays(this.hours())) ?? null);
   protected readonly readings = computed(() => this.telemetry()?.readings ?? []);
+  /** The fetch covers whole days (that is what the API serves); the chart shows just the range. */
+  protected readonly rangeReadings = computed(() => {
+    const since = this.now() - this.hours() * 3_600_000;
+    return this.readings().filter((r) => r.t >= since);
+  });
   protected readonly latest = computed(() => this.readings().at(-1) ?? null);
   protected readonly today = computed(() => summarizeDay(this.readings(), this.now()));
   protected readonly since = computed(() => {
@@ -101,14 +108,14 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
     this.wideQuery.addEventListener("change", this.onWideChange);
     this.clockTimer = window.setInterval(() => this.now.set(Date.now()), 30_000);
     this.refreshTimer = window.setInterval(() => {
-      if (this.session() && document.visibilityState === "visible") this.load(this.days(), true);
+      if (this.session() && document.visibilityState === "visible") this.load(fetchDays(this.hours()), true);
     }, REFRESH_MS);
     try {
       this.session.set(await this.api.session());
     } catch {
       this.session.set(null);
     }
-    if (this.session()) this.load(this.days());
+    if (this.session()) this.load(fetchDays(this.hours()));
   }
 
   ngOnDestroy(): void {
@@ -125,7 +132,7 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
 
   protected onSignedIn(session: Session): void {
     this.session.set(session);
-    this.load(this.days());
+    this.load(fetchDays(this.hours()));
   }
 
   protected async signOut(): Promise<void> {
@@ -135,13 +142,14 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
     this.session.set(null);
   }
 
-  protected selectDays(days: number): void {
-    this.days.set(days);
+  protected selectHours(hours: number): void {
+    this.hours.set(hours);
+    const days = fetchDays(hours);
     this.load(days, this.cache().has(days));
   }
 
   protected retry(): void {
-    this.load(this.days());
+    this.load(fetchDays(this.hours()));
   }
 
   private async load(days: number, quietly = false): Promise<void> {
@@ -158,7 +166,7 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
         this.failed.set(true);
       }
     } finally {
-      if (days === this.days()) this.loading.set(false);
+      if (days === fetchDays(this.hours())) this.loading.set(false);
     }
   }
 }

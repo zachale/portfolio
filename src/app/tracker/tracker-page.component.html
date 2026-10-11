@@ -158,8 +158,8 @@
           </dl>
         </section>
 
-        <tracker-history-card [readings]="readings()" [days]="days()" [loading]="loading()"
-          (daysChange)="selectDays($event)" />
+        <tracker-history-card [readings]="rangeReadings()" [hours]="hours()" [loading]="loading()"
+          (hoursChange)="selectHours($event)" />
 
       </main>
     </div>
