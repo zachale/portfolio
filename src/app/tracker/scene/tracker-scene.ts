@@ -43,9 +43,11 @@ export function tiltDegrees(percent: number): number {
 const DECK_TOP = 0.32;
 const PIVOT_HEIGHT = 2.62;
 const CAMERA_TARGET = new THREE.Vector3(0, 2.05, 0);
-// The boardwalk runs from the deck to the north-north-west, and the camera stands on it looking
-// south along the torque tube, with the lake off to the right, as in the photos.
-const PATH_DIRECTION = new THREE.Vector2(-0.18, -1).normalize();
+// The boardwalk meets the square deck at its north-east corner and runs out to the north-east.
+const PATH_DIRECTION = new THREE.Vector2(1, -1).normalize();
+// The camera stands north-north-west of the tracker looking along the torque tube, so the array's
+// face shows, the walk leads in from the left and the lake opens up on the right, as in the photos.
+const CAMERA_AZIMUTH = Math.atan2(-0.265, -0.964);
 // The lake lies to the west, so the array faces it when it parks at 100% for the night, and
 // reaches round behind the tracker to the south-west.
 const LAKE_CENTRE = new THREE.Vector2(-14, 12);
@@ -90,6 +92,13 @@ function inLake(x: number, z: number, margin = 0): boolean {
   const radius = 12 + 2.6 * Math.sin(angle * 3 + 0.6) + 1.4 * Math.sin(angle * 5 - 1.2);
   const stretched = Math.hypot(dx, dz * 0.8);
   return stretched < radius + margin;
+}
+
+// The few metres of marsh right at the camera's feet: a shrub there fills half the frame.
+function atCameraFeet(x: number, z: number): boolean {
+  const along = x * Math.sin(CAMERA_AZIMUTH) + z * Math.cos(CAMERA_AZIMUTH);
+  const across = Math.abs(x * Math.cos(CAMERA_AZIMUTH) - z * Math.sin(CAMERA_AZIMUTH));
+  return along > 7 && along < 16 && across < 3;
 }
 
 function onBoardwalk(x: number, z: number, margin: number): boolean {
@@ -224,10 +233,7 @@ export class TrackerScene {
     this.glass = tracker.glass;
     this.buildAnemometer();
 
-    // Stand on the boardwalk a little off its centre line, so it leads the eye in from the left,
-    // the array's face shows, and the lake opens up on the right.
-    const standing = PATH_DIRECTION.clone().rotateAround(new THREE.Vector2(), -0.09);
-    this.baseAzimuth = Math.atan2(standing.x, standing.y);
+    this.baseAzimuth = CAMERA_AZIMUTH;
     // The camera never moves and takes no input: the canvas must not swallow the touches that
     // scroll the page on a phone.
     this.placeCamera();
@@ -552,7 +558,7 @@ export class TrackerScene {
         const x = Math.cos(angle) * r, z = Math.sin(angle) * r;
         if (inLake(x, z, 3)) continue;
         // Keep the view from the boardwalk to the tracker clear.
-        const toward = Math.atan2(x, z) - this.baseAzimuthGuess();
+        const toward = Math.atan2(x, z) - CAMERA_AZIMUTH;
         const wrapped = Math.atan2(Math.sin(toward), Math.cos(toward));
         if (Math.abs(wrapped) < 1.25 && r < 90) continue;
         const height = hMin + rand() * (hMax - hMin);
@@ -583,10 +589,6 @@ export class TrackerScene {
     this.scene.add(foliageMesh, trunkMesh);
   }
 
-  private baseAzimuthGuess(): number {
-    return Math.atan2(PATH_DIRECTION.x, PATH_DIRECTION.y);
-  }
-
   private buildUnderstory(): void {
     const rand = random(1234);
     const bush = new THREE.IcosahedronGeometry(1, 1);
@@ -609,7 +611,7 @@ export class TrackerScene {
       const angle = rand() * Math.PI * 2;
       const r = 1.7 + Math.pow(rand(), 1.3) * 34;
       const x = Math.cos(angle) * r, z = Math.sin(angle) * r;
-      if (inLake(x, z, 1.5) || onBoardwalk(x, z, 0.35)) continue;
+      if (inLake(x, z, 1.5) || onBoardwalk(x, z, 0.35) || atCameraFeet(x, z)) continue;
       const size = 0.22 + rand() * 0.34;
       shrubs.push(new THREE.Matrix4().compose(
         new THREE.Vector3(x, size * 0.2, z),
@@ -668,7 +670,8 @@ export class TrackerScene {
     }
     // The walk: boards laid across it.
     const yaw = Math.atan2(PATH_DIRECTION.x, PATH_DIRECTION.y);
-    for (let along = 1.3; along < 16; along += 0.155) {
+    // Starting inside the corner, so the first boards tuck under the deck's and the two join.
+    for (let along = 1.45; along < 16; along += 0.155) {
       const c = new THREE.Vector3(PATH_DIRECTION.x * along, DECK_TOP - 0.018 - Math.min(0.08, along * 0.004), PATH_DIRECTION.y * along);
       addBoard(c, new THREE.Vector3(1.15, 0.036, 0.14), yaw);
     }
@@ -797,10 +800,10 @@ export class TrackerScene {
     const wood = new THREE.MeshStandardMaterial({ color: 0xcfb084, roughness: 0.9 });
     const black = new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.45, metalness: 0.2 });
     const group = new THREE.Group();
-    // At the edge of the boardwalk where it meets the deck, under the north end of the array but
-    // close enough to the tube to clear it at full tilt either way.
-    const east = new THREE.Vector2(-PATH_DIRECTION.y, PATH_DIRECTION.x).multiplyScalar(0.5);
-    const spot = PATH_DIRECTION.clone().multiplyScalar(1.9).add(east);
+    // Beside the boardwalk near the deck, on the right as you walk in (as in the video), and
+    // outside the array's sweep at full tilt either way.
+    const right = new THREE.Vector2(PATH_DIRECTION.y, -PATH_DIRECTION.x).multiplyScalar(0.75);
+    const spot = PATH_DIRECTION.clone().multiplyScalar(3).add(right);
     group.position.set(spot.x, 0, spot.y);
 
     const post = new THREE.Mesh(new THREE.BoxGeometry(0.09, 1.55, 0.09), wood);
