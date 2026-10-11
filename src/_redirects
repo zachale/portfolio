@@ -1,1 +1,5 @@
+# The solar tracker portal's API (solar-tracker repo, portal/), proxied so its session cookie
+# is first-party on every host this site is served from, deploy previews included.
+/api/tracker/*  https://tracker-api-188091506191.us-central1.run.app/:splat  200
+
 /*  /index.html  200

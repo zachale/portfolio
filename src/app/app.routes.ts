@@ -2,6 +2,10 @@ import { Routes } from "@angular/router";
 
 export const routes: Routes = [
   {
+    path: "tracker",
+    loadComponent: () => import("./tracker/tracker-page.component").then((m) => m.TrackerPageComponent),
+  },
+  {
     path: "",
     loadChildren: () =>
       import("./home-page/home-page.module").then((m) => m.HomePageModule),

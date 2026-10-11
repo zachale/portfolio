@@ -1,6 +1,8 @@
-import { Component } from "@angular/core";
-import { RouterOutlet } from "@angular/router";
+import { Component, inject } from "@angular/core";
+import { toSignal } from "@angular/core/rxjs-interop";
+import { NavigationEnd, Router, RouterOutlet } from "@angular/router";
 import { FlexLayoutModule } from "@angular/flex-layout";
+import { filter, map } from "rxjs";
 import { NavBarModule } from "./nav-bar/nav-bar.module";
 import { FooterModule } from "./home-page/footer/footer.module";
 
@@ -13,4 +15,14 @@ import { FooterModule } from "./home-page/footer/footer.module";
 })
 export class AppComponent {
   title = "portfolio-site";
+
+  // The tracker portal is a full-screen app of its own, without the portfolio's nav and footer.
+  private readonly router = inject(Router);
+  readonly bare = toSignal(
+    this.router.events.pipe(
+      filter((event) => event instanceof NavigationEnd),
+      map(() => this.router.url.startsWith("/tracker")),
+    ),
+    { initialValue: location.pathname.startsWith("/tracker") },
+  );
 }
