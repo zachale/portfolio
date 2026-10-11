@@ -37,9 +37,6 @@ describe("tracker telemetry", () => {
       reading(MORNING + 10 * MIN, "NIGHT", { percent: 90, temperature: 5, windSensor: false, windMs: 9 }),
     ];
     const today = summarizeDay(rows, MORNING + 20 * MIN);
-    expect(today.readings).toBe(3);
-    expect(today.trackingHours).toBeCloseTo(10 / 60);
-    expect([today.minPercent, today.maxPercent]).toEqual([20, 30]);
     expect([today.minTemperature, today.maxTemperature]).toEqual([4, 6]);
     expect(today.peakWindMs).toBe(3);
   });

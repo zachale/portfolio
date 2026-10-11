@@ -74,10 +74,6 @@ export function statusSpans(readings: Reading[]): StatusSpan[] {
 const dayKey = new Intl.DateTimeFormat("en-CA", { timeZone: SITE_TIME_ZONE, year: "numeric", month: "2-digit", day: "2-digit" });
 
 export interface DaySummary {
-  readings: number;
-  trackingHours: number;
-  minPercent: number | null;
-  maxPercent: number | null;
   minTemperature: number | null;
   maxTemperature: number | null;
   peakWindMs: number | null;
@@ -87,21 +83,11 @@ export interface DaySummary {
 export function summarizeDay(readings: Reading[], now: number): DaySummary {
   const today = dayKey.format(now);
   const rows = readings.filter((r) => dayKey.format(r.t) === today);
-  let trackingMs = 0;
-  rows.forEach((r, i) => {
-    const next = rows[i + 1];
-    if (r.status === "ACTIVE") trackingMs += next && next.t - r.t <= GAP_MS ? next.t - r.t : 0;
-  });
-  const active = rows.filter((r) => r.status === "ACTIVE").map((r) => r.percent);
   const temps = rows.map((r) => r.temperature);
   const winds = rows.filter((r) => r.windSensor).map((r) => r.windMs);
   const min = (xs: number[]) => (xs.length ? Math.min(...xs) : null);
   const max = (xs: number[]) => (xs.length ? Math.max(...xs) : null);
   return {
-    readings: rows.length,
-    trackingHours: trackingMs / 3_600_000,
-    minPercent: min(active),
-    maxPercent: max(active),
     minTemperature: min(temps),
     maxTemperature: max(temps),
     peakWindMs: max(winds),

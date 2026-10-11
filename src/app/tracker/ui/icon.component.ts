@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input } from "@angular/core";
 
 export type IconName =
-  | "sun" | "moon" | "wind" | "pause" | "thermometer" | "sunrise" | "arrows" | "expand" | "close" | "bell"
+  | "sun" | "moon" | "wind" | "pause" | "thermometer" | "expand" | "close" | "bell"
   | "clock" | "message" | "copy" | "table" | "chart" | "logout" | "refresh";
 
 // Stroke icons drawn on a 24-unit grid; they inherit currentColor.
@@ -11,8 +11,6 @@ const PATHS: Record<IconName, string> = {
   wind: "M3 8h11a3 3 0 1 0-3-3M3 12h16a3 3 0 1 1-3 3M3 16h7",
   pause: "M9 5v14M15 5v14",
   thermometer: "M14 14.8V5a2 2 0 1 0-4 0v9.8a4 4 0 1 0 4 0Z",
-  sunrise: "M12 3v5M5.6 9.6 4.2 8.2M19.8 8.2l-1.4 1.4M2 16h20M7 16a5 5 0 0 1 10 0M5 20h14",
-  arrows: "M4 12h16M8 8l-4 4 4 4M16 8l4 4-4 4",
   expand: "M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7",
   close: "M6 6l12 12M18 6 6 18",
   bell: "M6 9a6 6 0 1 1 12 0c0 5 2 6.5 2 6.5H4S6 14 6 9ZM10 19.5a2 2 0 0 0 4 0",

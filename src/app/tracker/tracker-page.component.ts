@@ -92,7 +92,7 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
     const age = this.now() - last;
     const tone = age < DELAYED_MS ? "fresh" : age < OFFLINE_MS ? "delayed" : "offline";
     const ago = relativeTime(last, this.now());
-    const label = tone === "fresh" ? `Updated ${ago}` : tone === "delayed" ? `Delayed · updated ${ago}` : `Offline · last report ${ago}`;
+    const label = tone === "fresh" ? `Updated ${ago}` : tone === "delayed" ? `Delayed · ${ago}` : `Offline · ${ago}`;
     return { tone, label };
   });
 

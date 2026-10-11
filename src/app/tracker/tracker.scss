@@ -93,14 +93,6 @@
     border-radius: var(--radius-md);
   }
 
-  .app-header {
-    @media (min-width: 1024px) {
-      background: rgba(var(--scrim), 0.86);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-    }
-  }
-
   // The scene and the numbers over it
   .hero {
     --scrim-top-start: 1;
@@ -124,18 +116,6 @@
     @media (min-width: 1024px) {
       background: linear-gradient(to top, rgba(var(--scrim), 0.9), rgba(var(--scrim), 0.6) 45%, rgba(var(--scrim), 0));
     }
-  }
-
-  .brand-mark {
-    display: grid;
-    flex: none;
-    place-items: center;
-    width: 40px;
-    height: 40px;
-    border-radius: var(--radius-md);
-    color: var(--on-accent);
-    background: radial-gradient(circle at 30% 30%, #fde68a, var(--accent));
-    box-shadow: 0 0 24px rgba(251, 191, 36, 0.3);
   }
 
   // A status icon on a tint of its own colour; the label beside it carries the meaning.
