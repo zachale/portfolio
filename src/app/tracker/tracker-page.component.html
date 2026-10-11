@@ -158,7 +158,7 @@
           </dl>
         </section>
 
-        <tracker-history-card [readings]="rangeReadings()" [hours]="hours()" [loading]="loading()"
+        <tracker-history-card [readings]="rangeReadings()" [hours]="hours()" [end]="rangeEnd()" [loading]="loading()"
           (hoursChange)="selectHours($event)" />
 
       </main>

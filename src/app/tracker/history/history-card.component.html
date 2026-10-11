@@ -2,7 +2,7 @@
   <div class="flex flex-wrap items-center justify-between gap-3">
     <div>
       <h2 id="tracker-history-title" class="section-title">History</h2>
-      <p class="mt-0.5 text-[12px] font-medium text-2">A reading every 5 minutes</p>
+      <p class="mt-0.5 text-[12px] font-medium text-2">Up to the last sync, {{ endLabel() }}</p>
     </div>
     <div class="flex w-full items-center justify-between gap-2 sm:w-auto">
       <ng-container *ngTemplateOutlet="rangeTabs; context: { $implicit: cardRanges() }" />
@@ -12,7 +12,7 @@
     </div>
   </div>
   <div class="relative mt-4">
-    <tracker-history-chart class="h-[430px] sm:h-[470px]" [readings]="readings()" [spanHours]="hours()" />
+    <tracker-history-chart class="h-[430px] sm:h-[470px]" [readings]="readings()" [spanHours]="hours()" [end]="end()" />
     @if (loading()) {
       <div class="shimmer absolute inset-0 rounded-[var(--radius-md)]" style="background-color: var(--surface-solid)" aria-hidden="true"></div>
     } @else if (!readings().length) {
@@ -60,7 +60,7 @@
       </div>
       <div class="relative mt-4 min-h-0 flex-1">
         @if (view() === "chart") {
-          <tracker-history-chart class="h-full" [readings]="readings()" [spanHours]="hours()" [expanded]="true" />
+          <tracker-history-chart class="h-full" [readings]="readings()" [spanHours]="hours()" [end]="end()" [expanded]="true" />
           <p class="pointer-events-none absolute right-0 top-0 hidden text-[12px] text-2 sm:block">
             Scroll or pinch to zoom · drag the handles below
           </p>

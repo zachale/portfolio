@@ -29,6 +29,8 @@ const TABLE_LIMIT = 400;
 export class HistoryCardComponent {
   readonly readings = input.required<Reading[]>();
   readonly hours = input.required<number>();
+  /** When the window ends: the newest synced reading. */
+  readonly end = input.required<number>();
   readonly loading = input(false);
   readonly hoursChange = output<number>();
 
@@ -40,6 +42,7 @@ export class HistoryCardComponent {
   protected readonly statusMeta = STATUS_META;
   protected readonly kmh = kmh;
   protected readonly format = (t: number) => siteDateTime.format(t);
+  protected readonly endLabel = computed(() => siteDateTime.format(this.end()));
   protected readonly view = signal<"chart" | "table">("chart");
   protected readonly expanded = signal(false);
   private readonly dialog = viewChild.required<ElementRef<HTMLDialogElement>>("dialog");

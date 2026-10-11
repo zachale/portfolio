@@ -63,9 +63,14 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
 
   protected readonly telemetry = computed(() => this.cache().get(fetchDays(this.hours())) ?? null);
   protected readonly readings = computed(() => this.telemetry()?.readings ?? []);
+  /**
+   * The history window ends at the newest reading the tracker has synced, not at the clock: it
+   * uploads in batches, so "the last hour" counted back from now would often be half empty.
+   */
+  protected readonly rangeEnd = computed(() => this.latest()?.t ?? this.now());
   /** The fetch covers whole days (that is what the API serves); the chart shows just the range. */
   protected readonly rangeReadings = computed(() => {
-    const since = this.now() - this.hours() * 3_600_000;
+    const since = this.rangeEnd() - this.hours() * 3_600_000;
     return this.readings().filter((r) => r.t >= since);
   });
   protected readonly latest = computed(() => this.readings().at(-1) ?? null);

@@ -67,6 +67,8 @@ function nearest(readings: Reading[], t: number): Reading | null {
 export class HistoryChartComponent implements AfterViewInit, OnDestroy {
   readonly readings = input.required<Reading[]>();
   readonly spanHours = input.required<number>();
+  /** The right edge of the time axis (epoch ms); the left edge is spanHours before it. */
+  readonly end = input.required<number>();
   readonly expanded = input(false);
 
   private readonly el = viewChild.required<ElementRef<HTMLElement>>("chart");
@@ -78,8 +80,9 @@ export class HistoryChartComponent implements AfterViewInit, OnDestroy {
       // Read the inputs here so the effect re-runs when they change.
       const readings = this.readings();
       const spanHours = this.spanHours();
+      const end = this.end();
       const expanded = this.expanded();
-      if (this.chart) this.render(readings, spanHours, expanded);
+      if (this.chart) this.render(readings, spanHours, end, expanded);
     });
   }
 
@@ -87,7 +90,7 @@ export class HistoryChartComponent implements AfterViewInit, OnDestroy {
     const readings = this.readings();
     if (!readings.length) return "No readings in this range";
     const last = readings[readings.length - 1];
-    return `Panel position, temperature and peak wind over the last ${this.spanHours() < 48 ? `${this.spanHours()} hour(s)` : `${this.spanHours() / 24} days`}. Latest: ${last.percent}% extended, ${last.temperature} °C.`;
+    return `Panel position, temperature and peak wind over the ${this.spanHours() < 48 ? `${this.spanHours()} hour(s)` : `${this.spanHours() / 24} days`} up to the last sync. Latest: ${last.percent}% extended, ${last.temperature} °C.`;
   }
 
   ngAfterViewInit(): void {
@@ -95,11 +98,11 @@ export class HistoryChartComponent implements AfterViewInit, OnDestroy {
       this.chart = echarts.init(this.el().nativeElement, null, { renderer: "canvas" });
       this.resizeObserver = new ResizeObserver(() => {
         this.chart?.resize();
-        this.render(this.readings(), this.spanHours(), this.expanded());
+        this.render(this.readings(), this.spanHours(), this.end(), this.expanded());
       });
       this.resizeObserver.observe(this.el().nativeElement);
     });
-    this.render(this.readings(), this.spanHours(), this.expanded());
+    this.render(this.readings(), this.spanHours(), this.end(), this.expanded());
   }
 
   ngOnDestroy(): void {
@@ -107,12 +110,11 @@ export class HistoryChartComponent implements AfterViewInit, OnDestroy {
     this.chart?.dispose();
   }
 
-  private render(readings: Reading[], spanHours: number, expanded: boolean): void {
+  private render(readings: Reading[], spanHours: number, end: number, expanded: boolean): void {
     const chart = this.chart;
     if (!chart) return;
     const height = this.el().nativeElement.clientHeight;
-    const now = Date.now();
-    const min = now - spanHours * 3_600_000;
+    const min = end - spanHours * 3_600_000;
     const labelFor = (t: number) =>
       (spanHours <= 1 ? minuteLabel : spanHours <= 24 ? hourLabel : dayLabel).format(t);
 
@@ -136,7 +138,7 @@ export class HistoryChartComponent implements AfterViewInit, OnDestroy {
     const addAxes = (top: number, h: number, last: boolean, yAxis: object) => {
       grids.push({ left: 34, right: 20, top, height: h });
       xAxes.push({
-        type: "time", gridIndex: grids.length - 1, min, max: now,
+        type: "time", gridIndex: grids.length - 1, min, max: end,
         axisLine: { show: false }, axisTick: { show: false }, splitLine: { show: false },
         axisLabel: { show: last, color: INK.muted, fontFamily: FONT, fontSize: 12, hideOverlap: true, formatter: labelFor },
         axisPointer: { show: true, snap: false, label: { show: false }, lineStyle: { color: "rgba(255,255,255,0.35)", width: 1 } },
@@ -147,7 +149,7 @@ export class HistoryChartComponent implements AfterViewInit, OnDestroy {
     addTitle("Status", null);
     addAxes(y + titleH, stripH, false, { type: "value", show: false, min: 0, max: 1 });
     series.push({
-      type: "custom", xAxisIndex: 0, yAxisIndex: 0, silent: true,
+      type: "custom", xAxisIndex: 0, yAxisIndex: 0, silent: true, clip: true,
       data: statusSpans(readings).map((s) => [s.start, s.end, STATUS_ORDER.indexOf(s.status)]),
       encode: { x: [0, 1] },
       renderItem: (_: unknown, api: { value: (i: number) => number; coord: (p: number[]) => number[]; size: (p: number[]) => number[] }) => {
