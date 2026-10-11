@@ -58,7 +58,6 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
 
   protected readonly statusMeta = STATUS_META;
   protected readonly kmh = kmh;
-  protected readonly year = new Date().getFullYear();
 
   protected readonly telemetry = computed(() => this.cache().get(this.days()) ?? null);
   protected readonly readings = computed(() => this.telemetry()?.readings ?? []);

@@ -175,11 +175,6 @@
         <tracker-history-card [readings]="readings()" [days]="days()" [loading]="loading()"
           (daysChange)="selectDays($event)" (hover)="hovered.set($event)" />
 
-        <footer class="px-1 pb-2 text-[13px] leading-relaxed text-2">
-          A single-axis, time-based tracker on a boardwalk in the Canadian Shield, tilted by a 12 V actuator and
-          reporting every five minutes. Built by <a class="underline underline-offset-2 hover:text-[color:var(--text-1)]" href="https://zachlegesse.ca">Zach Legesse</a> ·
-          <a class="underline underline-offset-2 hover:text-[color:var(--text-1)]" href="https://github.com/zachale/solar-tracker">source</a> · {{ year }}
-        </footer>
       </main>
     </div>
   </div>
