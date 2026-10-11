@@ -5,25 +5,63 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
 import { TrackerStatus, STATUS_META } from "../telemetry";
 import { sunAt, sunDirection } from "./sun";
 
-/**
- * Paints each instance in its id colour, and cuts out a textured card where its picture is
- * transparent, as the real material does with alphaTest.
- */
-function idMaterial(cutout: THREE.Texture | null, side: THREE.Side): THREE.ShaderMaterial {
+/** Paints each instance in its id colour (see TrackerScene.placePlantings). */
+function idMaterial(side: THREE.Side): THREE.ShaderMaterial {
   return new THREE.ShaderMaterial({
     side,
-    uniforms: { cutout: { value: cutout } },
-    defines: cutout ? { CUTOUT: "" } : {},
-    vertexShader: `varying vec3 vId; varying vec2 vUv;
-      void main() { vUv = uv; vId = instanceColor; gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position, 1.0); }`,
-    fragmentShader: `uniform sampler2D cutout; varying vec3 vId; varying vec2 vUv;
-      void main() {
-        #ifdef CUTOUT
-        if (texture2D(cutout, vUv).a < 0.5) discard;
-        #endif
-        gl_FragColor = vec4(vId, 1.0);
-      }`,
+    vertexShader: `varying vec3 vId;
+      void main() { vId = instanceColor; gl_Position = projectionMatrix * modelViewMatrix * instanceMatrix * vec4(position, 1.0); }`,
+    fragmentShader: `varying vec3 vId; void main() { gl_FragColor = vec4(vId, 1.0); }`,
   });
+}
+
+interface Planting {
+  geometry: THREE.BufferGeometry;
+  material: THREE.Material;
+  matrices: THREE.Matrix4[];
+  colors: THREE.Color[] | null;
+  receiveShadow: boolean;
+}
+
+/** A planting as one instanced mesh: all of it, or only the instances in `keep`. */
+function instancedMesh(planting: Planting, keep: Set<number> | null): THREE.InstancedMesh {
+  const kept = planting.matrices.map((_, i) => i).filter((i) => !keep || keep.has(i));
+  const mesh = new THREE.InstancedMesh(planting.geometry, planting.material, kept.length);
+  kept.forEach((index, i) => {
+    mesh.setMatrixAt(i, planting.matrices[index]);
+    if (planting.colors) mesh.setColorAt(i, planting.colors[index]);
+  });
+  mesh.receiveShadow = planting.receiveShadow;
+  return mesh;
+}
+
+/**
+ * Points a camera at the tracker for a canvas of this size. It never moves after that, and takes
+ * no input: the canvas must not swallow the touches that scroll the page on a phone.
+ */
+function frameCamera(camera: THREE.PerspectiveCamera, width: number, height: number, framing: Framing): void {
+  camera.aspect = width / height;
+  // Fit the width on wide screens; on tall ones cap the lens and let the sides crop, or the
+  // frame fills with sky and treetops.
+  const horizontal = THREE.MathUtils.degToRad(50);
+  const vertical = 2 * Math.atan(Math.tan(horizontal / 2) / camera.aspect);
+  camera.fov = THREE.MathUtils.clamp(THREE.MathUtils.radToDeg(vertical), 28, 56);
+  camera.near = 0.3;
+  camera.far = 4000;
+  // Shift the projection (not the camera) so the tracker lands where the layout has room for it.
+  camera.setViewOffset(width, height, (0.5 - framing.x) * width, (0.5 - framing.y) * height, width, height);
+  camera.updateProjectionMatrix();
+  // Narrow screens see less sideways, so step back and widen the lens; look down on the array a
+  // little, as from the bank in the photo, so its face shows.
+  const portrait = camera.aspect < 1;
+  const distance = portrait ? 10 + (1 - camera.aspect) * 5 : 9;
+  const elevation = portrait ? 0.2 : 0.17;
+  camera.position.set(
+    CAMERA_TARGET.x + Math.sin(CAMERA_AZIMUTH) * Math.cos(elevation) * distance,
+    CAMERA_TARGET.y + Math.sin(elevation) * distance,
+    CAMERA_TARGET.z + Math.cos(CAMERA_AZIMUTH) * Math.cos(elevation) * distance,
+  );
+  camera.lookAt(CAMERA_TARGET);
 }
 
 /** What the scene shows: a point in time and what the tracker was doing then. */
@@ -46,6 +84,22 @@ export interface Framing {
   x: number;
   y: number;
 }
+
+/** Between the numbers over the sky and the ones over the ground. */
+export const DASHBOARD_FRAMING: Framing = { x: 0.5, y: 0.57 };
+/** Clear of the sign-in card: above it on a phone, beside it on a wide screen. */
+export const LOGIN_FRAMING_NARROW: Framing = { x: 0.5, y: 0.3 };
+export const LOGIN_FRAMING_WIDE: Framing = { x: 0.68, y: 0.52 };
+
+// Every way the page shows the scene, as the canvas size in CSS pixels: the dashboard and the
+// sign-in screen, each on a phone and on a 1440 × 900 desktop. Anything no ray from any of
+// these reaches is never built (see placePlantings).
+const VIEWS: { width: number; height: number; framing: Framing }[] = [
+  { width: 390, height: 740, framing: DASHBOARD_FRAMING },
+  { width: 820, height: 852, framing: DASHBOARD_FRAMING },
+  { width: 390, height: 844, framing: LOGIN_FRAMING_NARROW },
+  { width: 1440, height: 900, framing: LOGIN_FRAMING_WIDE },
+];
 
 interface SceneOptions {
   /** Desktop-class device: render at full pixel ratio with sharper shadows. */
@@ -114,21 +168,21 @@ function random(seed: number) {
   };
 }
 
+const GROUND_SIZE = 700;
+
+function lakeRadius(angle: number): number {
+  return 12 + 2.6 * Math.sin(angle * 3 + 0.6) + 1.4 * Math.sin(angle * 5 - 1.2);
+}
+
 function inLake(x: number, z: number, margin = 0): boolean {
   const dx = x - LAKE_CENTRE.x, dz = z - LAKE_CENTRE.y;
-  const angle = Math.atan2(dz, dx);
-  const radius = 12 + 2.6 * Math.sin(angle * 3 + 0.6) + 1.4 * Math.sin(angle * 5 - 1.2);
-  const stretched = Math.hypot(dx, dz * 0.8);
-  return stretched < radius + margin;
+  return Math.hypot(dx, dz * 0.8) < lakeRadius(Math.atan2(dz, dx)) + margin;
 }
 
 // The camera never moves, so nothing it cannot see is built. Its view is narrowest on a phone
 // (where it also stands furthest back) and widest on desktop and the sign-in screen; this wedge,
 // from the furthest standing point, covers them all with room for shadows cast in from the sides.
 const VIEW_APEX = 14;
-// The pine model is 1 tall and 0.74 across its lowest tier; its impostor card has a little room.
-const IMPOSTOR_HEIGHT = 1.12;
-const IMPOSTOR_ASPECT = 0.7;
 const VIEW_HALF_ANGLE = THREE.MathUtils.degToRad(40);
 function inView(x: number, z: number, radius: number): boolean {
   const dx = x - Math.sin(CAMERA_AZIMUTH) * VIEW_APEX;
@@ -198,9 +252,8 @@ export class TrackerScene {
   private readonly hemiLight = new THREE.HemisphereLight(0xcfe3ff, 0x5b6b38, 1);
   private readonly stars: THREE.Points<THREE.BufferGeometry, THREE.PointsMaterial>;
   private readonly vegetation: { material: THREE.MeshStandardMaterial; color: THREE.Color }[] = [];
-  /** Instanced vegetation, with every instance it was built with, so culling can start over. */
-  private readonly cullables: { mesh: THREE.InstancedMesh; matrices: THREE.Matrix4[]; colors: THREE.Color[] | null }[] = [];
-  private cullTimer = 0;
+  /** Vegetation waiting for placePlantings to keep only what can be seen. */
+  private readonly plantings: Planting[] = [];
   private trackerRig: THREE.Object3D;
   private anemometer: THREE.Object3D;
 
@@ -223,7 +276,6 @@ export class TrackerScene {
   private running = false;
   private visible = true;
   private disposed = false;
-  private readonly baseAzimuth: number;
   private readonly resizeObserver: ResizeObserver;
   private readonly intersectionObserver: IntersectionObserver;
 
@@ -283,10 +335,7 @@ export class TrackerScene {
     this.glass = tracker.glass;
     this.buildAnemometer();
 
-    this.baseAzimuth = CAMERA_AZIMUTH;
-    // The camera never moves and takes no input: the canvas must not swallow the touches that
-    // scroll the page on a phone.
-    this.placeCamera();
+    this.placePlantings();
 
     this.resizeObserver = new ResizeObserver(() => this.resize());
     this.resizeObserver.observe(host);
@@ -314,7 +363,6 @@ export class TrackerScene {
 
   dispose(): void {
     this.disposed = true;
-    clearTimeout(this.cullTimer);
     this.renderer.setAnimationLoop(null);
     this.resizeObserver.disconnect();
     this.intersectionObserver.disconnect();
@@ -384,22 +432,6 @@ export class TrackerScene {
     this.renderer.render(this.scene, this.camera);
   }
 
-  private placeCamera(): void {
-    const azimuth = this.baseAzimuth;
-    const aspect = this.camera.aspect || 1;
-    // Narrow screens see less sideways, so step back and widen the lens.
-    const portrait = aspect < 1;
-    const distance = portrait ? 10 + (1 - aspect) * 5 : 9;
-    // Look down on the array a little, as from the bank in the photo, so its face shows.
-    const elevation = portrait ? 0.2 : 0.17;
-    this.camera.position.set(
-      CAMERA_TARGET.x + Math.sin(azimuth) * Math.cos(elevation) * distance,
-      CAMERA_TARGET.y + Math.sin(elevation) * distance,
-      CAMERA_TARGET.z + Math.cos(azimuth) * Math.cos(elevation) * distance,
-    );
-    this.camera.lookAt(CAMERA_TARGET);
-  }
-
   private resize(): void {
     const width = this.host.clientWidth;
     const height = this.host.clientHeight;
@@ -407,59 +439,54 @@ export class TrackerScene {
     this.renderer.setSize(width, height, false);
     this.renderer.domElement.style.width = "100%";
     this.renderer.domElement.style.height = "100%";
-    this.camera.aspect = width / height;
-    // Fit the width on wide screens; on tall ones cap the lens and let the sides crop, or the
-    // frame fills with sky and treetops.
-    const horizontal = THREE.MathUtils.degToRad(50);
-    const vertical = 2 * Math.atan(Math.tan(horizontal / 2) / this.camera.aspect);
-    this.camera.fov = THREE.MathUtils.clamp(THREE.MathUtils.radToDeg(vertical), 28, 56);
-    // Shift the projection (not the camera) so the tracker lands where the layout has room for it.
-    this.camera.setViewOffset(width, height, (0.5 - this.framing.x) * width, (0.5 - this.framing.y) * height, width, height);
-    this.camera.updateProjectionMatrix();
-    this.placeCamera();
-    this.scheduleCull();
+    frameCamera(this.camera, width, height, this.framing);
     if (!this.running) this.renderer.render(this.scene, this.camera);
   }
 
-  // Once the size has settled: a phone rotating or a window being dragged resizes many times.
-  private scheduleCull(): void {
-    clearTimeout(this.cullTimer);
-    this.cullTimer = window.setTimeout(() => this.cullHidden(), 300);
+  /**
+   * Builds the vegetation, keeping only the instances some camera ray reaches. The camera never
+   * moves, so one render per view with each instance in a colour that encodes its id answers
+   * that for every pixel's ray at once, and whatever no pixel of any view shows is never built.
+   * The tracker and anemometer don't count as cover, since they move: the array tilts through
+   * the day, and what it hides at noon it uncovers at dusk.
+   */
+  private placePlantings(): void {
+    const everything = this.plantings.map((planting) => instancedMesh(planting, null));
+    everything.forEach((mesh) => this.scene.add(mesh));
+    const seen = this.seenFromViews(everything);
+    everything.forEach((mesh) => {
+      this.scene.remove(mesh);
+      mesh.dispose();
+    });
+    this.plantings.forEach((planting, i) => {
+      const mesh = instancedMesh(planting, seen[i]);
+      if (mesh.count) this.scene.add(mesh);
+    });
+    this.plantings.length = 0;
   }
 
-  /**
-   * The ray test. The camera never moves, so any bush, reed or tree that no ray from it reaches
-   * is never seen and need not be drawn. One render with every instance in a colour that encodes
-   * its id answers that for every pixel's ray at once; whatever no pixel shows is dropped. The
-   * tracker and anemometer don't count as cover, since they move: the array tilts through the
-   * day, and what it hides at noon it uncovers at dusk. Each resize starts again from the full
-   * set, so a phone turned sideways sees what it should.
-   */
-  private cullHidden(): void {
-    const { width, height } = this.renderer.domElement;
-    if (this.disposed || !width || !height) return;
-    this.cullables.forEach((c) => this.fill(c, null));
-
+  /** For each mesh, the instances that at least one pixel of at least one view shows. */
+  private seenFromViews(meshes: THREE.InstancedMesh[]): Set<number>[] {
     const restore: (() => void)[] = [];
-    const swap = <K extends keyof T, T extends object>(target: T, key: K, value: T[K]) => {
+    const swap = <T extends object, K extends keyof T>(target: T, key: K, value: T[K]) => {
       const previous = target[key];
       target[key] = value;
       restore.push(() => (target[key] = previous));
     };
     for (const object of [this.sky, this.nightDome, this.stars, this.trackerRig, this.anemometer]) swap(object, "visible", false);
     const cover = new THREE.MeshBasicMaterial({ color: 0x000000 });
-    const idMaterials: THREE.Material[] = [cover];
+    const materials: THREE.Material[] = [cover];
     this.scene.traverse((object) => {
       const mesh = object as THREE.Mesh;
       if (!mesh.isMesh) return;
-      const index = this.cullables.findIndex((c) => c.mesh === mesh);
+      const index = meshes.indexOf(mesh as THREE.InstancedMesh);
       if (index < 0) {
         swap(mesh, "material", cover);
         return;
       }
-      const instanced = mesh as THREE.InstancedMesh;
-      // Ids start at 1 (0 is the cleared background and the cover) and pack the cullable's index
-      // into the top four bits of 24.
+      const instanced = meshes[index];
+      // Ids start at 1 (0 is the cleared background and the cover) and carry the mesh's index in
+      // the top four of their 24 bits.
       const ids = new Float32Array(instanced.count * 3);
       for (let i = 0; i < instanced.count; i++) {
         const id = ((index + 1) << 20) | i;
@@ -467,68 +494,50 @@ export class TrackerScene {
       }
       swap(instanced, "instanceColor", new THREE.InstancedBufferAttribute(ids, 3));
       const source = instanced.material as THREE.MeshStandardMaterial;
-      const material = idMaterial(source.alphaTest > 0 ? source.map : null, source.side);
-      idMaterials.push(material);
+      const material = idMaterial(source.side);
+      materials.push(material);
       swap(mesh, "material", material);
     });
 
-    const target = new THREE.WebGLRenderTarget(width, height, {
-      minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, generateMipmaps: false,
-    });
+    const seen = meshes.map(() => new Set<number>());
+    const camera = new THREE.PerspectiveCamera();
+    const shadows = this.renderer.shadowMap.autoUpdate;
     const clearColor = this.renderer.getClearColor(new THREE.Color());
     const clearAlpha = this.renderer.getClearAlpha();
-    const shadows = this.renderer.shadowMap.autoUpdate;
     this.renderer.shadowMap.autoUpdate = false;
-    this.renderer.setRenderTarget(target);
-    this.renderer.setClearColor(0x000000, 0);
-    this.renderer.clear();
-    this.renderer.render(this.scene, this.camera);
-    const pixels = new Uint8Array(width * height * 4);
-    this.renderer.readRenderTargetPixels(target, 0, 0, width, height, pixels);
+    for (const view of VIEWS) {
+      // At about a phone's pixel density, so slivers between leaves count as seen.
+      const width = Math.round(view.width * 1.5), height = Math.round(view.height * 1.5);
+      frameCamera(camera, width, height, view.framing);
+      const target = new THREE.WebGLRenderTarget(width, height, {
+        minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter, generateMipmaps: false,
+      });
+      this.renderer.setRenderTarget(target);
+      this.renderer.setClearColor(0x000000, 0);
+      this.renderer.clear();
+      this.renderer.render(this.scene, camera);
+      const pixels = new Uint8Array(width * height * 4);
+      this.renderer.readRenderTargetPixels(target, 0, 0, width, height, pixels);
+      target.dispose();
+      for (let p = 0; p < pixels.length; p += 4) {
+        const id = (pixels[p] << 16) | (pixels[p + 1] << 8) | pixels[p + 2];
+        if (id) seen[(id >> 20) - 1]?.add(id & 0xfffff);
+      }
+    }
     this.renderer.setRenderTarget(null);
     this.renderer.setClearColor(clearColor, clearAlpha);
     this.renderer.shadowMap.autoUpdate = shadows;
-    target.dispose();
     restore.reverse().forEach((undo) => undo());
-    idMaterials.forEach((material) => material.dispose());
-
-    const seen = this.cullables.map(() => new Set<number>());
-    for (let p = 0; p < pixels.length; p += 4) {
-      const id = (pixels[p] << 16) | (pixels[p + 1] << 8) | pixels[p + 2];
-      if (id) seen[(id >> 20) - 1]?.add(id & 0xfffff);
-    }
-    this.cullables.forEach((c, i) => this.fill(c, seen[i]));
-    if (!this.running) this.renderer.render(this.scene, this.camera);
+    materials.forEach((material) => material.dispose());
+    return seen;
   }
 
-  /** Writes a cullable's instances back, all of them or only those in `keep`. */
-  private fill(cullable: (typeof this.cullables)[number], keep: Set<number> | null): void {
-    const { mesh, matrices, colors } = cullable;
-    let count = 0;
-    matrices.forEach((matrix, i) => {
-      if (keep && !keep.has(i)) return;
-      mesh.setMatrixAt(count, matrix);
-      if (colors) mesh.setColorAt(count, colors[i]);
-      count++;
-    });
-    mesh.count = count;
-    mesh.instanceMatrix.needsUpdate = true;
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-    // Its bounds change with its contents, and three.js frustum-culls the mesh by them.
-    mesh.boundingSphere = null;
-    mesh.boundingBox = null;
-  }
-
-  /** An instanced mesh of vegetation, registered for the ray test. */
+  /** Queues instanced vegetation for placePlantings. */
   private instances(
-    geometry: THREE.BufferGeometry, material: THREE.Material, matrices: THREE.Matrix4[], colors: THREE.Color[] | null = null,
-  ): THREE.InstancedMesh {
-    const mesh = new THREE.InstancedMesh(geometry, material, matrices.length);
-    const cullable = { mesh, matrices, colors };
-    this.cullables.push(cullable);
-    this.fill(cullable, null);
-    this.scene.add(mesh);
-    return mesh;
+    geometry: THREE.BufferGeometry, material: THREE.Material, matrices: THREE.Matrix4[],
+    colors: THREE.Color[] | null = null, receiveShadow = false,
+  ): void {
+    this.plantings.push({ geometry, material, matrices, colors, receiveShadow });
   }
 
   private updateArray(): void {
@@ -659,38 +668,61 @@ export class TrackerScene {
   }
 
   private buildGround(): void {
-    const geometry = new THREE.PlaneGeometry(700, 700, 220, 220);
-    geometry.rotateX(-Math.PI / 2);
-    const position = geometry.attributes["position"] as THREE.BufferAttribute;
-    const colors = new Float32Array(position.count * 3);
-    const marsh = [new THREE.Color(0x4a6624), new THREE.Color(0x5f7d2c), new THREE.Color(0x3c5520)];
-    const shore = new THREE.Color(0x6b6440);
-    const color = new THREE.Color();
-    for (let i = 0; i < position.count; i++) {
-      const x = position.getX(i), z = position.getZ(i);
-      const noise = Math.sin(x * 0.31) * Math.cos(z * 0.27) + Math.sin(x * 0.11 + z * 0.17) * 0.6;
-      let y = noise * 0.08;
-      if (inLake(x, z)) y = -1.2;
-      else if (inLake(x, z, 2.5)) y = -0.15;
-      position.setY(i, y);
-      const pick = (noise + 1.6) / 3.2;
-      color.copy(marsh[0]).lerp(marsh[1], THREE.MathUtils.clamp(pick, 0, 1));
-      if (Math.sin(x * 0.7 + z * 0.4) > 0.6) color.lerp(marsh[2], 0.5);
-      if (inLake(x, z, 3)) color.lerp(shore, 0.6);
-      colors.set([color.r, color.g, color.b], i * 3);
-    }
-    geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
-    geometry.computeVertexNormals();
-    const ground = new THREE.Mesh(geometry, this.plant(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 })));
+    // The ground is flat, so it is one quad; the marsh's colour is painted on it instead of
+    // carried by thousands of vertices.
+    const ground = new THREE.Mesh(
+      new THREE.PlaneGeometry(GROUND_SIZE, GROUND_SIZE).rotateX(-Math.PI / 2),
+      this.plant(new THREE.MeshStandardMaterial({ map: this.groundTexture(), roughness: 1 })),
+    );
     ground.receiveShadow = true;
     this.scene.add(ground);
 
+    // The lake is its own surface just above the ground, cut to the lake's outline.
+    const outline = new THREE.Shape();
+    for (let i = 0; i <= 128; i++) {
+      const angle = (i / 128) * Math.PI * 2;
+      const reach = lakeRadius(angle) / Math.hypot(Math.cos(angle), 0.8 * Math.sin(angle));
+      // The shape is drawn in x/y and laid flat below, which turns its y into -z.
+      const x = LAKE_CENTRE.x + Math.cos(angle) * reach, z = LAKE_CENTRE.y + Math.sin(angle) * reach;
+      if (i === 0) outline.moveTo(x, -z);
+      else outline.lineTo(x, -z);
+    }
     const water = new THREE.Mesh(
-      new THREE.CircleGeometry(60, 64).rotateX(-Math.PI / 2),
+      new THREE.ShapeGeometry(outline, 1).rotateX(-Math.PI / 2),
       new THREE.MeshStandardMaterial({ color: 0x0c1a1f, metalness: 1, roughness: 0.06, envMapIntensity: 1.1 }),
     );
-    water.position.set(LAKE_CENTRE.x, -0.12, LAKE_CENTRE.y);
+    water.position.y = 0.02;
     this.scene.add(water);
+  }
+
+  /** The marsh seen from above: greens in soft drifts, browning toward the shore. */
+  private groundTexture(): THREE.CanvasTexture {
+    const size = 512;
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = size;
+    const ctx = canvas.getContext("2d")!;
+    const image = ctx.createImageData(size, size);
+    const marsh = [new THREE.Color(0x4a6624), new THREE.Color(0x5f7d2c), new THREE.Color(0x3c5520)];
+    const shore = new THREE.Color(0x6b6440);
+    const color = new THREE.Color();
+    for (let row = 0; row < size; row++) {
+      for (let column = 0; column < size; column++) {
+        const x = ((column + 0.5) / size - 0.5) * GROUND_SIZE;
+        const z = ((row + 0.5) / size - 0.5) * GROUND_SIZE;
+        const noise = Math.sin(x * 0.31) * Math.cos(z * 0.27) + Math.sin(x * 0.11 + z * 0.17) * 0.6;
+        color.copy(marsh[0]).lerp(marsh[1], THREE.MathUtils.clamp((noise + 1.6) / 3.2, 0, 1));
+        if (Math.sin(x * 0.7 + z * 0.4) > 0.6) color.lerp(marsh[2], 0.5);
+        if (inLake(x, z, 3)) color.lerp(shore, 0.6);
+        const rgb = color.getHex();
+        const p = (row * size + column) * 4;
+        image.data.set([rgb >> 16, (rgb >> 8) & 255, rgb & 255, 255], p);
+      }
+    }
+    ctx.putImageData(image, 0, 0);
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    texture.anisotropy = this.renderer.capabilities.getMaxAnisotropy();
+    return texture;
   }
 
   private buildForest(): void {
@@ -732,66 +764,6 @@ export class TrackerScene {
     }
     this.instances(foliage, this.plant(new THREE.MeshStandardMaterial({ roughness: 0.95, flatShading: true })), trees, tints);
     this.instances(trunk, new THREE.MeshStandardMaterial({ color: 0x3b2f26, roughness: 1 }), trees);
-
-    // Behind them, a deep forest of flat cut-outs: a picture of the same pine, rendered once,
-    // on cards turned to face the camera. At this distance nobody can tell, and a card is two
-    // triangles where a pine is a few hundred.
-    const card = new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0);
-    const material = this.plant(new THREE.MeshStandardMaterial({
-      map: this.pineImpostor(foliage, trunk), alphaTest: 0.5, roughness: 1, side: THREE.DoubleSide,
-    }));
-    const cards: THREE.Matrix4[] = [];
-    const cardTints: THREE.Color[] = [];
-    const cameraX = Math.sin(CAMERA_AZIMUTH) * VIEW_APEX, cameraZ = Math.cos(CAMERA_AZIMUTH) * VIEW_APEX;
-    for (let attempts = 0; cards.length < 1600 && attempts < 60000; attempts++) {
-      const angle = rand() * Math.PI * 2;
-      const r = 80 + rand() * 230;
-      const x = Math.cos(angle) * r, z = Math.sin(angle) * r;
-      const height = 9 + rand() * 10;
-      const width = height * IMPOSTOR_ASPECT * (0.85 + rand() * 0.35);
-      if (inLake(x, z, 2) || !inView(x, z, width)) continue;
-      const facing = Math.atan2(cameraX - x, cameraZ - z);
-      cards.push(new THREE.Matrix4().compose(
-        new THREE.Vector3(x, 0, z),
-        new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), facing),
-        // A mirrored card now and then, so the copies don't line up.
-        new THREE.Vector3(rand() < 0.5 ? -width : width, height, 1),
-      ));
-      cardTints.push(new THREE.Color(greens[Math.floor(rand() * greens.length)]).multiplyScalar(1.25));
-    }
-    this.instances(card, material, cards, cardTints);
-  }
-
-  /** One pine rendered side-on into a texture: white foliage, so each card's tint colours it. */
-  private pineImpostor(foliage: THREE.BufferGeometry, trunk: THREE.BufferGeometry): THREE.Texture {
-    const target = new THREE.WebGLRenderTarget(256, Math.round(256 / IMPOSTOR_ASPECT), {
-      samples: 4, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter,
-    });
-    const studio = new THREE.Scene();
-    studio.add(
-      new THREE.Mesh(foliage, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.95, flatShading: true })),
-      new THREE.Mesh(trunk, new THREE.MeshStandardMaterial({ color: 0x6b5a4a, roughness: 1 })),
-      new THREE.AmbientLight(0xffffff, 0.9),
-    );
-    const key = new THREE.DirectionalLight(0xffffff, 1.6);
-    key.position.set(-1, 2, 2);
-    studio.add(key);
-    const halfWidth = IMPOSTOR_HEIGHT * IMPOSTOR_ASPECT / 2;
-    const camera = new THREE.OrthographicCamera(-halfWidth, halfWidth, IMPOSTOR_HEIGHT, 0, 0.1, 10);
-    camera.position.set(0, 0.3, 5);
-    camera.lookAt(0, 0.3, 0);
-
-    const previousTarget = this.renderer.getRenderTarget();
-    const previousClear = this.renderer.getClearColor(new THREE.Color());
-    const previousAlpha = this.renderer.getClearAlpha();
-    this.renderer.setRenderTarget(target);
-    this.renderer.setClearColor(0x000000, 0);
-    this.renderer.clear();
-    this.renderer.render(studio, camera);
-    this.renderer.setRenderTarget(previousTarget);
-    this.renderer.setClearColor(previousClear, previousAlpha);
-    studio.traverse((o) => ((o as THREE.Mesh).material as THREE.Material | undefined)?.dispose());
-    return target.texture;
   }
 
   private buildUnderstory(): void {
@@ -831,7 +803,7 @@ export class TrackerScene {
       ));
       tints.push(new THREE.Color(greens[Math.floor(rand() * greens.length)]));
     }
-    this.instances(bush, this.plant(new THREE.MeshStandardMaterial({ roughness: 0.85 })), shrubs, tints).receiveShadow = true;
+    this.instances(bush, this.plant(new THREE.MeshStandardMaterial({ roughness: 0.85 })), shrubs, tints, true);
 
     // Reeds and cattails along the shore and through the marsh.
     const reed = new THREE.CylinderGeometry(0.006, 0.012, 1, 4).translate(0, 0.5, 0);

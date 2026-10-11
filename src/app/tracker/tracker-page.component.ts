@@ -6,7 +6,9 @@ import { AdminRequestsComponent } from "./admin/admin-requests.component";
 import { HistoryCardComponent } from "./history/history-card.component";
 import { LoginPanelComponent } from "./login/login-panel.component";
 import { SceneViewComponent } from "./scene/scene-view.component";
-import type { Atmosphere, Framing, SceneMoment } from "./scene/tracker-scene";
+import {
+  DASHBOARD_FRAMING, LOGIN_FRAMING_NARROW, LOGIN_FRAMING_WIDE, type Atmosphere, type Framing, type SceneMoment,
+} from "./scene/tracker-scene";
 import {
   STATUS_META, Telemetry, kmh, relativeTime, siteTime, statusSince, summarizeDay,
 } from "./telemetry";
@@ -54,8 +56,8 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
   private readonly onWideChange = (event: MediaQueryListEvent) => this.wide.set(event.matches);
 
   /** Keep the tracker clear of the sign-in card, and between the numbers on the dashboard. */
-  protected readonly loginFraming = computed<Framing>(() => (this.wide() ? { x: 0.68, y: 0.52 } : { x: 0.5, y: 0.3 }));
-  protected readonly dashboardFraming: Framing = { x: 0.5, y: 0.57 };
+  protected readonly loginFraming = computed<Framing>(() => (this.wide() ? LOGIN_FRAMING_WIDE : LOGIN_FRAMING_NARROW));
+  protected readonly dashboardFraming = DASHBOARD_FRAMING;
 
   protected readonly statusMeta = STATUS_META;
   protected readonly kmh = kmh;
