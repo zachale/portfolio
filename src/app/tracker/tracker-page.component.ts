@@ -45,7 +45,7 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
   protected readonly failed = signal(false);
   protected readonly now = signal(Date.now());
   protected readonly hovered = signal<Reading | null>(null);
-  protected readonly atmosphere = signal<Atmosphere>({ horizon: "#0b1424", night: 1 });
+  protected readonly atmosphere = signal<Atmosphere>({ horizon: "#283d68", night: 1 });
   protected readonly menuOpen = signal(false);
   private readonly accountMenu = viewChild<ElementRef<HTMLElement>>("accountMenu");
   private readonly wideQuery = matchMedia("(min-width: 1024px)");

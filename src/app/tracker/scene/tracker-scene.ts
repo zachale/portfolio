@@ -43,8 +43,30 @@ export function tiltDegrees(percent: number): number {
 const DECK_TOP = 0.32;
 const PIVOT_HEIGHT = 2.62;
 const CAMERA_TARGET = new THREE.Vector3(0, 2.05, 0);
-// The boardwalk runs from the deck toward the west-south-west, and the camera stands on it.
-const PATH_DIRECTION = new THREE.Vector2(-0.79, 0.61).normalize();
+// The boardwalk runs from the deck to the north-north-west, and the camera stands on it looking
+// south along the torque tube, with the lake off to the right, as in the photos.
+const PATH_DIRECTION = new THREE.Vector2(-0.18, -1).normalize();
+// The lake lies to the west, so the array faces it when it parks at 100% for the night, and
+// reaches round behind the tracker to the south-west.
+const LAKE_CENTRE = new THREE.Vector2(-14, 12);
+
+// 3 × 3 modules, each with its long side along the torque tube, as in the photos.
+const MODULE_WIDTH = 1.134;
+const MODULE_LENGTH = 1.722;
+const MODULE_GAP = 0.02;
+const ARRAY_HALF_WIDTH = 1.5 * MODULE_WIDTH + MODULE_GAP;
+const ARRAY_HALF_LENGTH = 1.5 * MODULE_LENGTH + MODULE_GAP;
+
+// Day for night: after sunset the scene is lit like a film night scene shot in daylight, by a
+// cool moon and a blue sky fill, so it stays readable and simply turns blue.
+const NIGHT_SKY_TOP = 0x0c1834;
+const NIGHT_HORIZON = 0x283d68;
+const TWILIGHT_SKY_TOP = 0x1d2d5a;
+const TWILIGHT_HORIZON = 0x4b5e8f;
+// Moonlight drains colour: at night the greens are pulled toward a grey that the blue light
+// then tints, as in day-for-night photography.
+const NIGHT_VEGETATION = new THREE.Color(1.5, 0.75, 3);
+const MOON_DIRECTION = new THREE.Vector3(-0.56, 0.78, -0.26).normalize();
 
 const smoothstep = (a: number, b: number, x: number) => {
   const t = Math.min(1, Math.max(0, (x - a) / (b - a)));
@@ -63,12 +85,10 @@ function random(seed: number) {
 }
 
 function inLake(x: number, z: number, margin = 0): boolean {
-  // An irregular lake to the north-east, as in the photos.
-  const cx = 24, cz = -20;
-  const dx = x - cx, dz = z - cz;
+  const dx = x - LAKE_CENTRE.x, dz = z - LAKE_CENTRE.y;
   const angle = Math.atan2(dz, dx);
-  const radius = 17 + 3.5 * Math.sin(angle * 3 + 0.6) + 2 * Math.sin(angle * 5 - 1.2);
-  const stretched = Math.hypot(dx * 0.8, dz * 1.15);
+  const radius = 12 + 2.6 * Math.sin(angle * 3 + 0.6) + 1.4 * Math.sin(angle * 5 - 1.2);
+  const stretched = Math.hypot(dx, dz * 0.8);
   return stretched < radius + margin;
 }
 
@@ -124,14 +144,17 @@ export class TrackerScene {
   private readonly moonLight = new THREE.DirectionalLight(0x9db6ff, 0);
   private readonly hemiLight = new THREE.HemisphereLight(0xcfe3ff, 0x5b6b38, 1);
   private readonly stars: THREE.Points<THREE.BufferGeometry, THREE.PointsMaterial>;
+  private readonly vegetation: { material: THREE.MeshStandardMaterial; color: THREE.Color }[] = [];
 
   private readonly array = new THREE.Group();
   private readonly actuatorBarrel: THREE.Mesh;
   private readonly actuatorRod: THREE.Mesh;
+  // The actuator pushes up the east edge, so extending it turns the array to face west.
   private readonly actuatorBase = new THREE.Vector3(0.1, 1.2, 0);
   private readonly actuatorTop = new THREE.Vector3(0.7, -0.1, 0);
   private readonly rotor = new THREE.Group();
   private readonly led: THREE.Mesh<THREE.SphereGeometry, THREE.MeshStandardMaterial>;
+  private readonly glass: THREE.MeshPhysicalMaterial;
 
   private framing: Framing = { x: 0.5, y: 0.5 };
   private target: SceneMoment = { time: new Date(), percent: 50, windMs: 0, status: null };
@@ -176,15 +199,20 @@ export class TrackerScene {
     this.stars = this.buildStars();
     this.scene.add(this.stars);
 
-    this.sunLight.castShadow = true;
+    // The moon casts the shadows once the sun has set; only one of the two casts at a time, so
+    // the shaders don't recompile at dusk.
     const shadowSize = options.interactive ? 2048 : 1024;
-    this.sunLight.shadow.mapSize.set(shadowSize, shadowSize);
-    Object.assign(this.sunLight.shadow.camera, { left: -8, right: 8, top: 8, bottom: -8, near: 1, far: 80 });
-    this.sunLight.shadow.bias = -0.0004;
-    this.sunLight.shadow.normalBias = 0.02;
-    this.sunLight.target.position.set(0, 1, 0);
-    this.moonLight.position.set(-30, 60, 25);
-    this.scene.add(this.sunLight, this.sunLight.target, this.moonLight, this.hemiLight);
+    for (const light of [this.sunLight, this.moonLight]) {
+      light.castShadow = true;
+      light.shadow.mapSize.set(shadowSize, shadowSize);
+      // Room for the whole array at full tilt, the deck and the anemometer.
+      Object.assign(light.shadow.camera, { left: -6.5, right: 6.5, top: 6.5, bottom: -6.5, near: 1, far: 80 });
+      light.shadow.bias = -0.0004;
+      light.shadow.normalBias = 0.02;
+      light.target.position.set(0, 1, 0);
+    }
+    this.moonLight.position.copy(MOON_DIRECTION).multiplyScalar(40).add(this.moonLight.target.position);
+    this.scene.add(this.sunLight, this.sunLight.target, this.moonLight, this.moonLight.target, this.hemiLight);
 
     this.buildGround();
     this.buildForest();
@@ -194,10 +222,12 @@ export class TrackerScene {
     this.actuatorBarrel = tracker.barrel;
     this.actuatorRod = tracker.rod;
     this.led = tracker.led;
+    this.glass = tracker.glass;
     this.buildAnemometer();
 
-    // Stand on the boardwalk a little off its centre line, so it leads the eye in.
-    const standing = PATH_DIRECTION.clone().rotateAround(new THREE.Vector2(), -0.22);
+    // Stand on the boardwalk a little off its centre line, so it leads the eye in from the left,
+    // the array's face shows, and the lake opens up on the right.
+    const standing = PATH_DIRECTION.clone().rotateAround(new THREE.Vector2(), -0.09);
     this.baseAzimuth = Math.atan2(standing.x, standing.y);
     this.placeCamera(this.baseAzimuth);
 
@@ -324,7 +354,8 @@ export class TrackerScene {
     // Narrow screens see less sideways, so step back and widen the lens.
     const portrait = aspect < 1;
     const distance = portrait ? 10 + (1 - aspect) * 5 : 9;
-    const elevation = portrait ? 0.12 : 0.08;
+    // Look down on the array a little, as from the bank in the photo, so its face shows.
+    const elevation = portrait ? 0.2 : 0.17;
     this.camera.position.set(
       CAMERA_TARGET.x + Math.sin(azimuth) * Math.cos(elevation) * distance,
       CAMERA_TARGET.y + Math.sin(elevation) * distance,
@@ -379,17 +410,24 @@ export class TrackerScene {
     const dir = this.sunDir;
     const altitude = THREE.MathUtils.radToDeg(Math.asin(THREE.MathUtils.clamp(dir.y, -1, 1)));
     const day = smoothstep(-4, 10, altitude);
-    const night = 1 - smoothstep(-14, -3, altitude);
+    const night = 1 - day;
+    // The moon comes up as the sun goes down, so twilight is never darker than night.
+    const moon = 1 - smoothstep(-6, 2, altitude);
+    const starry = 1 - smoothstep(-12, -5, altitude);
     const golden = smoothstep(-5, 1, altitude) * (1 - smoothstep(5, 18, altitude));
 
     for (const sky of [this.sky, this.envSky]) sky.material.uniforms["sunPosition"].value.copy(dir);
-    const domeOpacity = Math.min(0.96, 1 - smoothstep(-9, 1.5, altitude));
+    const domeOpacity = Math.min(0.96, 1 - smoothstep(-7, 1, altitude));
     for (const dome of [this.nightDome, this.envNightDome]) dome.material.uniforms["opacity"].value = domeOpacity;
-    this.stars.material.opacity = night * 0.95;
-    this.stars.visible = night > 0.01;
+    this.stars.material.opacity = starry * 0.95;
+    this.stars.visible = starry > 0.01;
+    const dusk = smoothstep(-12, -4, altitude);
+    const dome = this.nightDome.material.uniforms;
+    dome["top"].value.set(NIGHT_SKY_TOP).lerp(new THREE.Color(TWILIGHT_SKY_TOP), dusk);
+    dome["horizon"].value.set(NIGHT_HORIZON).lerp(new THREE.Color(TWILIGHT_HORIZON), dusk);
 
-    const horizon = new THREE.Color(0x0b1424)
-      .lerp(new THREE.Color(0x3e4466), smoothstep(-14, -4, altitude))
+    const horizon = new THREE.Color(NIGHT_HORIZON)
+      .lerp(new THREE.Color(TWILIGHT_HORIZON), dusk)
       .lerp(new THREE.Color(0xb9cfe3), day)
       .lerp(new THREE.Color(0xe8b58c), golden * 0.55);
     (this.scene.fog as THREE.Fog).color.copy(horizon);
@@ -397,15 +435,20 @@ export class TrackerScene {
     const sunVisible = smoothstep(-1.5, 10, altitude);
     this.sunLight.intensity = 3.2 * sunVisible;
     this.sunLight.color.set(0xffc490).lerp(new THREE.Color(0xfff5e8), smoothstep(4, 30, altitude));
-    this.sunLight.position.copy(dir).multiplyScalar(40).add(new THREE.Vector3(0, 1, 0));
+    this.sunLight.position.copy(dir).multiplyScalar(40).add(this.sunLight.target.position);
     this.sunLight.castShadow = altitude > -1;
+    this.moonLight.castShadow = !this.sunLight.castShadow;
 
-    this.moonLight.intensity = 1.0 * night;
-    this.hemiLight.color.set(0x24345a).lerp(new THREE.Color(0xd4e4ff), day);
-    this.hemiLight.groundColor.set(0x0b1013).lerp(new THREE.Color(0x56663a), day);
-    this.hemiLight.intensity = THREE.MathUtils.lerp(0.55, 0.7, day);
-    this.renderer.toneMappingExposure = THREE.MathUtils.lerp(1.15, 0.55, day);
-    this.scene.environmentIntensity = THREE.MathUtils.lerp(0.35, 0.6, day);
+    this.moonLight.intensity = 1.6 * moon;
+    this.hemiLight.color.set(0x6a86c4).lerp(new THREE.Color(0xd4e4ff), day);
+    this.hemiLight.groundColor.set(0x1d2a44).lerp(new THREE.Color(0x56663a), day);
+    this.hemiLight.intensity = THREE.MathUtils.lerp(1.15, 0.7, day);
+    this.renderer.toneMappingExposure = THREE.MathUtils.lerp(1.2, 0.55, day);
+    // The night sky in the panels and the lake is what makes them read after dark.
+    this.scene.environmentIntensity = THREE.MathUtils.lerp(1.2, 0.6, day);
+    this.glass.envMapIntensity = THREE.MathUtils.lerp(1.5, 0.5, day);
+    const drain = new THREE.Color(1, 1, 1).lerp(NIGHT_VEGETATION, night);
+    for (const { material, color } of this.vegetation) material.color.copy(color).multiply(drain);
 
     // Re-render the reflections only when the sky has visibly moved, and not every frame.
     const now = performance.now();
@@ -425,6 +468,11 @@ export class TrackerScene {
     }
   }
 
+  private plant(material: THREE.MeshStandardMaterial): THREE.MeshStandardMaterial {
+    this.vegetation.push({ material, color: material.color.clone() });
+    return material;
+  }
+
   private buildNightDome() {
     const material = new THREE.ShaderMaterial({
       side: THREE.BackSide,
@@ -433,8 +481,8 @@ export class TrackerScene {
       fog: false,
       uniforms: {
         opacity: { value: 0 },
-        top: { value: new THREE.Color(0x03060f) },
-        horizon: { value: new THREE.Color(0x172443) },
+        top: { value: new THREE.Color(NIGHT_SKY_TOP) },
+        horizon: { value: new THREE.Color(NIGHT_HORIZON) },
       },
       vertexShader: `varying vec3 vDir; void main() { vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
       fragmentShader: `uniform float opacity; uniform vec3 top; uniform vec3 horizon; varying vec3 vDir;
@@ -490,7 +538,7 @@ export class TrackerScene {
     }
     geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
     geometry.computeVertexNormals();
-    const ground = new THREE.Mesh(geometry, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 }));
+    const ground = new THREE.Mesh(geometry, this.plant(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1 })));
     ground.receiveShadow = true;
     this.scene.add(ground);
 
@@ -498,7 +546,7 @@ export class TrackerScene {
       new THREE.CircleGeometry(60, 64).rotateX(-Math.PI / 2),
       new THREE.MeshStandardMaterial({ color: 0x0c1a1f, metalness: 1, roughness: 0.06, envMapIntensity: 1.1 }),
     );
-    water.position.set(24, -0.12, -20);
+    water.position.set(LAKE_CENTRE.x, -0.12, LAKE_CENTRE.y);
     this.scene.add(water);
   }
 
@@ -548,7 +596,7 @@ export class TrackerScene {
 
     const foliageMesh = new THREE.InstancedMesh(
       foliage,
-      new THREE.MeshStandardMaterial({ roughness: 0.95, flatShading: true }),
+      this.plant(new THREE.MeshStandardMaterial({ roughness: 0.95, flatShading: true })),
       trees.length,
     );
     const trunkMesh = new THREE.InstancedMesh(trunk, new THREE.MeshStandardMaterial({ color: 0x3b2f26, roughness: 1 }), trees.length);
@@ -595,7 +643,7 @@ export class TrackerScene {
       ));
       tints.push(new THREE.Color(greens[Math.floor(rand() * greens.length)]));
     }
-    const shrubMesh = new THREE.InstancedMesh(bush, new THREE.MeshStandardMaterial({ roughness: 0.85 }), shrubs.length);
+    const shrubMesh = new THREE.InstancedMesh(bush, this.plant(new THREE.MeshStandardMaterial({ roughness: 0.85 })), shrubs.length);
     shrubs.forEach((matrix, i) => {
       shrubMesh.setMatrixAt(i, matrix);
       shrubMesh.setColorAt(i, tints[i]);
@@ -609,7 +657,7 @@ export class TrackerScene {
     const reeds: THREE.Matrix4[] = [];
     attempts = 0;
     while (reeds.length < 420 && attempts++ < 12000) {
-      const x = -14 + rand() * 50, z = -34 + rand() * 40;
+      const x = LAKE_CENTRE.x - 24 + rand() * 48, z = LAKE_CENTRE.y - 26 + rand() * 52;
       const nearShore = inLake(x, z, 3.5) && !inLake(x, z, 0.3);
       const scattered = !inLake(x, z, 1) && rand() < 0.07;
       if ((!nearShore && !scattered) || onBoardwalk(x, z, 0.3)) continue;
@@ -697,56 +745,65 @@ export class TrackerScene {
       tracker.add(gusset);
     }
 
-    // The control box faces the boardwalk, with the status light on its door.
-    const cabinet = box(0.16, 0.42, 0.32, enclosure);
-    cabinet.position.set(-0.155, 1.42, 0);
-    const junction = box(0.1, 0.2, 0.16, enclosure);
-    junction.position.set(-0.125, 0.92, 0.02);
+    // The control box hangs on the north face of the mast, level with the foot of the actuator,
+    // with its door to the boardwalk and the junction box below it. The status light sits low on
+    // the door, where it still shows under the array when it parks for the night.
+    const cabinet = box(0.32, 0.42, 0.16, enclosure);
+    cabinet.position.set(0, 1.32, -0.155);
+    const junction = box(0.16, 0.2, 0.1, enclosure);
+    junction.position.set(-0.02, 0.85, -0.125);
     const led = new THREE.Mesh(
       new THREE.SphereGeometry(0.018, 12, 8),
       new THREE.MeshStandardMaterial({ color: 0x0ca30c, emissive: 0x0ca30c, emissiveIntensity: 2 }),
     );
-    led.position.set(-0.24, 1.55, 0.09);
+    led.position.set(-0.09, 1.2, -0.24);
     tracker.add(cabinet, junction, led);
 
     const cable = new THREE.Mesh(
       new THREE.TubeGeometry(new THREE.CatmullRomCurve3([
-        new THREE.Vector3(-0.15, 1.63, 0.06), new THREE.Vector3(-0.13, 2.05, 0.1), new THREE.Vector3(-0.09, PIVOT_HEIGHT - 0.12, 0.05),
+        new THREE.Vector3(-0.06, 1.53, -0.15), new THREE.Vector3(-0.1, 2.05, -0.13), new THREE.Vector3(-0.05, PIVOT_HEIGHT - 0.12, -0.09),
       ]), 16, 0.008, 5),
       new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.7 }),
     );
     const drop = new THREE.Mesh(
       new THREE.TubeGeometry(new THREE.CatmullRomCurve3([
-        new THREE.Vector3(-0.13, 0.82, 0.02), new THREE.Vector3(-0.2, 0.5, 0.15), new THREE.Vector3(-0.4, DECK_TOP + 0.02, 0.6),
+        new THREE.Vector3(-0.02, 0.75, -0.13), new THREE.Vector3(-0.15, 0.5, -0.2), new THREE.Vector3(-0.6, DECK_TOP + 0.02, -0.4),
       ]), 16, 0.01, 5),
       cable.material,
     );
     tracker.add(cable, drop);
 
-    // The array: 3 × 2 landscape modules on aluminium rails over a steel torque tube that runs
-    // north-south, which is the axis the actuator turns it about.
+    // The array turns about a steel torque tube that runs north-south. Two cross-arms on the tube
+    // carry steel purlins under the seams between the module columns, and aluminium rails across
+    // the purlins clamp the modules at their ends.
     this.array.position.y = PIVOT_HEIGHT;
-    const tube = box(0.11, 0.11, 4.4, steel);
+    const tube = box(0.11, 0.11, 3.2, steel);
     tube.position.y = -0.02;
     this.array.add(tube);
-    for (const z of [-1.3, 1.3]) {
-      const beam = box(2.1, 0.07, 0.07, steel);
-      beam.position.set(0, 0.025, z);
-      this.array.add(beam);
+    for (const z of [-1.2, 1.2]) {
+      const arm = box(1.5, 0.07, 0.07, steel);
+      arm.position.set(0, 0.07, z);
+      this.array.add(arm);
+    }
+    for (const side of [-1, 1]) {
+      const purlin = box(0.06, 0.06, 2 * ARRAY_HALF_LENGTH - 0.4, steel);
+      purlin.position.set((side * (MODULE_WIDTH + MODULE_GAP)) / 2, 0.135, 0);
+      this.array.add(purlin);
     }
     const bracket = box(0.75, 0.06, 0.06, steel);
     bracket.position.set(0.38, -0.08, 0);
     this.array.add(bracket);
-    for (const x of [-0.85, -0.3, 0.3, 0.85]) {
-      const rail = box(0.04, 0.045, 5.25, aluminium);
-      rail.position.set(x, 0.082, 0);
+    const seam = (MODULE_LENGTH + MODULE_GAP) / 2;
+    for (const z of [-ARRAY_HALF_LENGTH + 0.3, -seam, seam, ARRAY_HALF_LENGTH - 0.3]) {
+      const rail = box(2 * ARRAY_HALF_WIDTH + 0.16, 0.045, 0.04, aluminium);
+      rail.position.set(0, 0.1875, z);
       this.array.add(rail);
     }
-    const module = new THREE.BoxGeometry(1.13, 0.035, 1.72);
+    const module = new THREE.BoxGeometry(MODULE_WIDTH, 0.035, MODULE_LENGTH);
     const faces = [aluminium, aluminium, glass, backsheet, aluminium, aluminium];
-    for (const x of [-0.575, 0.575]) for (const z of [-1.74, 0, 1.74]) {
+    for (const column of [-1, 0, 1]) for (const row of [-1, 0, 1]) {
       const panel = shadowed(new THREE.Mesh(module, faces));
-      panel.position.set(x, 0.122, z);
+      panel.position.set(column * (MODULE_WIDTH + MODULE_GAP), 0.2275, row * (MODULE_LENGTH + MODULE_GAP));
       this.array.add(panel);
     }
     tracker.add(this.array);
@@ -758,15 +815,17 @@ export class TrackerScene {
     ));
     tracker.add(barrel, rod);
     this.scene.add(tracker);
-    return { barrel, rod, led };
+    return { barrel, rod, led, glass };
   }
 
   private buildAnemometer(): void {
     const wood = new THREE.MeshStandardMaterial({ color: 0xcfb084, roughness: 0.9 });
     const black = new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.45, metalness: 0.2 });
     const group = new THREE.Group();
-    const side = new THREE.Vector2(-PATH_DIRECTION.y, PATH_DIRECTION.x).multiplyScalar(0.72);
-    const spot = PATH_DIRECTION.clone().multiplyScalar(1.75).add(side);
+    // At the edge of the boardwalk where it meets the deck, under the north end of the array but
+    // close enough to the tube to clear it at full tilt either way.
+    const east = new THREE.Vector2(-PATH_DIRECTION.y, PATH_DIRECTION.x).multiplyScalar(0.5);
+    const spot = PATH_DIRECTION.clone().multiplyScalar(1.9).add(east);
     group.position.set(spot.x, 0, spot.y);
 
     const post = new THREE.Mesh(new THREE.BoxGeometry(0.09, 1.55, 0.09), wood);

@@ -49,8 +49,11 @@ out on their next request.
 | `/design-system/solar-tracker-portal/` | The design system behind those tokens: `MASTER.md`, overridden by `pages/dashboard.md` |
 
 Notes on the model: 50% extension is flat and each percent is about 1.1° of tilt (SPEC.md in the
-solar-tracker repo), so 0% faces east and 100% faces west. Row times are converted from the
-site's wall clock to real instants by the API.
+solar-tracker repo), so 0% faces east and 100% faces west. The torque tube runs north-south and
+the lake lies to the west, so the array faces the water when it parks at 100% for the night; the
+camera stands on the boardwalk to the north. The array is 3 × 3 modules. After sunset the scene
+is lit day-for-night (a cool moon and a blue sky fill) so it stays readable. Row times are
+converted from the site's wall clock to real instants by the API.
 
 ## Local development
 
