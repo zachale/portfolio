@@ -41,6 +41,13 @@ export function tiltDegrees(percent: number): number {
 }
 
 const DECK_TOP = 0.32;
+// The deck is square around the post; the walk joins one of its corners.
+const DECK_HALF = 1.16;
+const WALK_HALF_WIDTH = 0.575;
+const WALK_LENGTH = 16;
+// The walk's first board sits far enough into the corner that both of its ends tuck under the
+// deck: the corner is DECK_HALF·√2 out, and the deck falls back at 45° on either side of it.
+const WALK_START = DECK_HALF * Math.SQRT2 - WALK_HALF_WIDTH - 0.1;
 const PIVOT_HEIGHT = 2.62;
 const CAMERA_TARGET = new THREE.Vector3(0, 2.05, 0);
 // The boardwalk meets the square deck at its north-east corner and runs out to the north-east.
@@ -101,11 +108,12 @@ function atCameraFeet(x: number, z: number): boolean {
   return along > 7 && along < 16 && across < 3;
 }
 
+/** Whether something reaching `margin` out from (x, z) would touch the deck or the walk. */
 function onBoardwalk(x: number, z: number, margin: number): boolean {
-  if (Math.abs(x) < 1.25 + margin && Math.abs(z) < 1.25 + margin) return true;
+  if (Math.abs(x) < DECK_HALF + margin && Math.abs(z) < DECK_HALF + margin) return true;
   const along = x * PATH_DIRECTION.x + z * PATH_DIRECTION.y;
   const across = Math.abs(-x * PATH_DIRECTION.y + z * PATH_DIRECTION.x);
-  return along > 0 && along < 16 && across < 0.6 + margin;
+  return along > 0 && along < WALK_LENGTH + margin && across < WALK_HALF_WIDTH + margin;
 }
 
 function panelTexture(): THREE.CanvasTexture {
@@ -611,12 +619,15 @@ export class TrackerScene {
       const angle = rand() * Math.PI * 2;
       const r = 1.7 + Math.pow(rand(), 1.3) * 34;
       const x = Math.cos(angle) * r, z = Math.sin(angle) * r;
-      if (inLake(x, z, 1.5) || onBoardwalk(x, z, 0.35) || atCameraFeet(x, z)) continue;
+      if (inLake(x, z, 1.5) || atCameraFeet(x, z)) continue;
       const size = 0.22 + rand() * 0.34;
+      const spread = new THREE.Vector3(size * (1 + rand() * 0.7), size * 0.8, size * (1 + rand() * 0.7));
+      // Keep the whole bush (its jittered radius reaches 1.18) off the boards, not just its centre.
+      if (onBoardwalk(x, z, Math.max(spread.x, spread.z) * 1.18 + 0.05)) continue;
       shrubs.push(new THREE.Matrix4().compose(
         new THREE.Vector3(x, size * 0.2, z),
         new THREE.Quaternion().setFromEuler(new THREE.Euler(rand() * 0.4, rand() * 6, rand() * 0.4)),
-        new THREE.Vector3(size * (1 + rand() * 0.7), size * 0.8, size * (1 + rand() * 0.7)),
+        spread,
       ));
       tints.push(new THREE.Color(greens[Math.floor(rand() * greens.length)]));
     }
@@ -637,7 +648,7 @@ export class TrackerScene {
       const x = LAKE_CENTRE.x - 24 + rand() * 48, z = LAKE_CENTRE.y - 26 + rand() * 52;
       const nearShore = inLake(x, z, 3.5) && !inLake(x, z, 0.3);
       const scattered = !inLake(x, z, 1) && rand() < 0.07;
-      if ((!nearShore && !scattered) || onBoardwalk(x, z, 0.3)) continue;
+      if ((!nearShore && !scattered) || onBoardwalk(x, z, 0.45)) continue;
       const height = 0.8 + rand() * 0.9;
       reeds.push(new THREE.Matrix4().compose(
         new THREE.Vector3(x, -0.1, z),
@@ -665,21 +676,22 @@ export class TrackerScene {
       tints.push(new THREE.Color(woods[Math.floor(rand() * woods.length)]));
     };
     // Deck around the post: boards run east-west.
-    for (let z = -1.15; z <= 1.16; z += 0.155) {
-      addBoard(new THREE.Vector3(0, DECK_TOP - 0.018, z), new THREE.Vector3(2.4, 0.036, 0.14), 0);
+    for (let i = -7; i <= 7; i++) {
+      addBoard(new THREE.Vector3(0, DECK_TOP - 0.018, i * 0.155), new THREE.Vector3(DECK_HALF * 2, 0.036, 0.14), 0);
     }
     // The walk: boards laid across it.
     const yaw = Math.atan2(PATH_DIRECTION.x, PATH_DIRECTION.y);
-    // Starting inside the corner, so the first boards tuck under the deck's and the two join.
-    for (let along = 1.45; along < 16; along += 0.155) {
+    // A few millimetres below the deck, so where the two overlap at the corner the deck covers it.
+    for (let along = WALK_START; along < WALK_LENGTH; along += 0.155) {
       const c = new THREE.Vector3(PATH_DIRECTION.x * along, DECK_TOP - 0.018 - Math.min(0.08, along * 0.004), PATH_DIRECTION.y * along);
-      addBoard(c, new THREE.Vector3(1.15, 0.036, 0.14), yaw);
+      addBoard(c, new THREE.Vector3(WALK_HALF_WIDTH * 2, 0.036, 0.14), yaw);
     }
     // Joists under the walk and posts under the deck.
     for (const side of [-0.45, 0.45]) {
       const offset = new THREE.Vector3(-PATH_DIRECTION.y * side, 0, PATH_DIRECTION.x * side);
-      const mid = new THREE.Vector3(PATH_DIRECTION.x * 8.6, DECK_TOP - 0.1, PATH_DIRECTION.y * 8.6).add(offset);
-      addBoard(mid, new THREE.Vector3(0.05, 0.14, 14.6), yaw);
+      const middle = (WALK_START + WALK_LENGTH) / 2;
+      const mid = new THREE.Vector3(PATH_DIRECTION.x * middle, DECK_TOP - 0.1, PATH_DIRECTION.y * middle).add(offset);
+      addBoard(mid, new THREE.Vector3(0.05, 0.14, WALK_LENGTH - WALK_START), yaw);
     }
     for (const x of [-1.05, 1.05]) for (const z of [-1.05, 1.05]) {
       addBoard(new THREE.Vector3(x, DECK_TOP / 2 - 0.05, z), new THREE.Vector3(0.09, DECK_TOP + 0.1, 0.09), 0);
