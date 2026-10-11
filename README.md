@@ -2,6 +2,12 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.3.3.
 
+## Solar tracker portal
+
+`/tracker` (and `tracker.zachlegesse.ca`) is a private, full-screen dashboard for the lakeside
+solar tracker: a three.js model of the real tracker lit by the real sun, its live status and
+panel position, and history charts. See [src/app/tracker/README.md](src/app/tracker/README.md).
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.

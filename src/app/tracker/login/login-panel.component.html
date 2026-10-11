@@ -1,0 +1,43 @@
+<div class="glass rounded-[28px] p-6 sm:p-8">
+  <p class="eyebrow">Private portal</p>
+  <h1 class="display mt-2 text-[40px] leading-[1.02] sm:text-5xl">The lakeside<br />solar tracker</h1>
+
+  @switch (step()) {
+    @case ("checking") {
+      <div class="shimmer mt-6 h-[164px] rounded-2xl" aria-busy="true"></div>
+    }
+    @case ("phone") {
+      <p class="mt-4 text-[15px] leading-relaxed" style="color: var(--text-2)">
+        Enter your phone number to ask for access. Zach approves it and you're in.
+      </p>
+      <form class="mt-6" (ngSubmit)="request()">
+        <label class="field-label" for="tracker-phone">Phone number</label>
+        <input id="tracker-phone" name="phone" class="field mt-2" type="tel" inputmode="tel" autocomplete="tel"
+          placeholder="(519) 555-0123" required [(ngModel)]="phone" aria-describedby="tracker-login-notice" />
+        <label class="mt-4 flex cursor-pointer items-center gap-3 text-[14px]" style="color: var(--text-2)">
+          <input type="checkbox" name="remember" class="h-5 w-5 accent-[#f2b84b]" [(ngModel)]="remember" />
+          Keep me signed in on this device for 90 days
+        </label>
+        <button class="cta mt-5 w-full" type="submit" [disabled]="busy() || phone.trim().length < 7">
+          {{ busy() ? "Asking…" : "Ask for access" }}
+        </button>
+      </form>
+    }
+    @case ("waiting") {
+      <div class="mt-6 flex items-center gap-4 rounded-2xl p-4" style="background: rgba(255,255,255,0.05)" role="status">
+        <span class="waiting-orb" aria-hidden="true"></span>
+        <div>
+          <p class="font-medium">Waiting for Zach to approve</p>
+          <p class="mt-1 text-[14px] leading-snug" style="color: var(--text-2)">
+            This page signs you in on its own. You can close it and come back any time in the next 24 hours.
+          </p>
+        </div>
+      </div>
+      <button type="button" class="link mt-5 text-[14px]" (click)="cancel()">Use a different number</button>
+    }
+  }
+
+  <p id="tracker-login-notice" class="mt-4 min-h-[1.25rem] text-[14px]" style="color: #f39a7a" role="alert">
+    {{ notice() }}
+  </p>
+</div>

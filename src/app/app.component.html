@@ -1,7 +1,11 @@
-<div fxLayoutAlign="center">
-  <div class="max-w-screen-lg w-full">
-    <app-nav-bar class="top-4 max-w-screen-lg true-sticky z-10"></app-nav-bar>
-    <router-outlet></router-outlet>
-    <app-footer></app-footer>
+@if (bare()) {
+  <router-outlet></router-outlet>
+} @else {
+  <div fxLayoutAlign="center">
+    <div class="max-w-screen-lg w-full">
+      <app-nav-bar class="top-4 max-w-screen-lg true-sticky z-10"></app-nav-bar>
+      <router-outlet></router-outlet>
+      <app-footer></app-footer>
+    </div>
   </div>
-</div>
+}
