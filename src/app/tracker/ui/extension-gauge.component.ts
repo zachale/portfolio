@@ -6,16 +6,16 @@ import { ChangeDetectionStrategy, Component, computed, input } from "@angular/co
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="relative flex h-6 items-stretch gap-[3px]" role="meter" aria-label="Panel extension"
+    <div class="relative flex h-5 items-stretch gap-[3px]" role="meter" aria-label="Panel extension"
       aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="percent()">
       @for (lit of segments(); track $index) {
-        <span class="flex-1 rounded-full transition-colors duration-700"
-          [style.background]="lit ? 'var(--accent)' : 'rgba(255,255,255,0.14)'"
-          [style.opacity]="lit ? 0.45 + ($index / segments().length) * 0.55 : 1"></span>
+        <span class="flex-1 rounded-full transition-[background-color,opacity] duration-500"
+          [style.background]="lit ? 'var(--accent)' : 'rgba(226,232,240,0.22)'"
+          [style.opacity]="lit ? 0.55 + ($index / segments().length) * 0.45 : 1"></span>
       }
-      <span class="pointer-events-none absolute -bottom-2 left-1/2 h-1.5 w-px bg-white/50"></span>
+      <span class="pointer-events-none absolute -bottom-2 left-1/2 h-1.5 w-0.5 -translate-x-1/2 rounded-full bg-white/80"></span>
     </div>
-    <div class="mt-2.5 flex justify-between font-mono text-[10px] uppercase tracking-[0.12em]" style="color: var(--text-3)">
+    <div class="mt-3 flex justify-between text-[12px] font-semibold uppercase tracking-[0.06em]" style="color: var(--on-scene-2)">
       <span>East</span><span>Flat</span><span>West</span>
     </div>
   `,

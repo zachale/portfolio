@@ -45,7 +45,8 @@ out on their next request.
 | `login/` | Ask for access, then wait for approval (polls every 4 s) |
 | `admin/` | Sign-in requests for Zach to approve or deny |
 | `telemetry.ts` | Types, status labels and colours, and the derived numbers (today, status since, spans) |
-| `tracker.scss` | Portal styles, imported globally and scoped under `.tracker-root` |
+| `tracker.scss` | Portal styles and design tokens, imported globally and scoped under `.tracker-root` |
+| `/design-system/solar-tracker-portal/` | The design system behind those tokens: `MASTER.md`, overridden by `pages/dashboard.md` |
 
 Notes on the model: 50% extension is flat and each percent is about 1.1° of tilt (SPEC.md in the
 solar-tracker repo), so 0% faces east and 100% faces west. Row times are converted from the

@@ -1,5 +1,5 @@
 import {
-  ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, signal,
+  ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, computed, inject, signal, viewChild,
 } from "@angular/core";
 
 import { AdminRequestsComponent } from "./admin/admin-requests.component";
@@ -31,6 +31,8 @@ const OFFLINE_MS = 3 * 60 * 60 * 1000;
   host: {
     class: "tracker-root",
     "[style.--horizon]": "atmosphere().horizon",
+    "(document:keydown.escape)": "menuOpen.set(false)",
+    "(document:click)": "closeMenuOutside($event)",
   },
 })
 export class TrackerPageComponent implements OnInit, OnDestroy {
@@ -45,6 +47,7 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
   protected readonly hovered = signal<Reading | null>(null);
   protected readonly atmosphere = signal<Atmosphere>({ horizon: "#0b1424", night: 1 });
   protected readonly menuOpen = signal(false);
+  private readonly accountMenu = viewChild<ElementRef<HTMLElement>>("accountMenu");
   private readonly wideQuery = matchMedia("(min-width: 1024px)");
   private readonly wide = signal(this.wideQuery.matches);
   private readonly onWideChange = (event: MediaQueryListEvent) => this.wide.set(event.matches);
@@ -88,7 +91,8 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
     if (last === null) return null;
     const age = this.now() - last;
     const tone = age < DELAYED_MS ? "fresh" : age < OFFLINE_MS ? "delayed" : "offline";
-    const label = tone === "offline" ? `Offline · last report ${relativeTime(last, this.now())}` : `Updated ${relativeTime(last, this.now())}`;
+    const ago = relativeTime(last, this.now());
+    const label = tone === "fresh" ? `Updated ${ago}` : tone === "delayed" ? `Delayed · updated ${ago}` : `Offline · last report ${ago}`;
     return { tone, label };
   });
 
@@ -100,7 +104,7 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     // The page is dark edge to edge, including the overscroll area behind it, and sets its own type.
     this.previousBackground = document.body.style.background;
-    document.documentElement.style.background = document.body.style.background = "#0a0f14";
+    document.documentElement.style.background = document.body.style.background = "#0f172a";
     this.hadMaterialTypography = document.body.classList.contains("mat-typography");
     document.body.classList.remove("mat-typography");
     this.wideQuery.addEventListener("change", this.onWideChange);
@@ -122,6 +126,10 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
     this.wideQuery.removeEventListener("change", this.onWideChange);
     clearInterval(this.clockTimer);
     clearInterval(this.refreshTimer);
+  }
+
+  protected closeMenuOutside(event: MouseEvent): void {
+    if (this.menuOpen() && !this.accountMenu()?.nativeElement.contains(event.target as Node)) this.menuOpen.set(false);
   }
 
   protected onSignedIn(session: Session): void {

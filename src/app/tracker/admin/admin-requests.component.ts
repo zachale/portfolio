@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal } from "@angular/core";
+import { ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, computed, inject, signal } from "@angular/core";
 
 import { relativeTime } from "../telemetry";
 import { AccessRequest, TrackerApi } from "../tracker-api.service";
@@ -11,51 +11,62 @@ import { IconComponent } from "../ui/icon.component";
   imports: [IconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <button type="button" class="icon-button relative" (click)="toggle()" [attr.aria-expanded]="open()"
-      aria-haspopup="dialog" [attr.aria-label]="'Sign-in requests: ' + requests().length">
+    <button type="button" class="icon-button" (click)="toggle()" [attr.aria-expanded]="open()"
+      aria-controls="tracker-admin-requests" [attr.aria-label]="label()">
       <tracker-icon name="bell" [size]="20" />
       @if (requests().length) {
-        <span class="absolute -right-0.5 -top-0.5 grid h-[18px] min-w-[18px] place-items-center rounded-full px-1 text-[11px] font-semibold"
-          style="background: #e5484d; color: white">{{ requests().length }}</span>
+        <span class="badge" aria-hidden="true">{{ requests().length }}</span>
       }
     </button>
+    <span class="sr-only" role="status" aria-atomic="true">{{ requests().length ? label() : "" }}</span>
     @if (open()) {
-      <div class="glass-strong absolute right-0 top-12 z-30 w-[min(92vw,360px)] rounded-3xl p-4" role="dialog"
-        aria-label="Sign-in requests">
-        <div class="flex items-center justify-between">
-          <p class="eyebrow">Sign-in requests</p>
-          <button type="button" class="icon-button h-8 w-8" aria-label="Close" (click)="open.set(false)">
-            <tracker-icon name="close" [size]="16" />
+      <div id="tracker-admin-requests" role="dialog" aria-labelledby="tracker-admin-requests-title"
+        class="popover fixed inset-x-4 top-[calc(72px+env(safe-area-inset-top))] z-30 p-2 sm:absolute sm:inset-x-auto sm:right-0 sm:top-[52px] sm:w-[360px]">
+        <div class="flex items-center justify-between gap-3 py-1 pl-3">
+          <p id="tracker-admin-requests-title" class="text-[15px] font-bold">Sign-in requests</p>
+          <button type="button" class="icon-button" aria-label="Close" (click)="open.set(false)">
+            <tracker-icon name="close" [size]="18" />
           </button>
         </div>
-        @for (request of requests(); track request.id) {
-          <div class="mt-3 rounded-2xl p-3" style="background: rgba(255,255,255,0.05)">
-            <div class="flex items-baseline justify-between gap-3">
-              <span class="font-medium">{{ request.name }}</span>
-              <span class="text-[12px]" style="color: var(--text-3)">{{ asked(request) }}</span>
-            </div>
-            <div class="mt-0.5 text-[13px]" style="color: var(--text-2)">{{ request.phone }}</div>
-            <div class="mt-3 grid grid-cols-2 gap-2">
-              <button type="button" class="cta cta-small" [disabled]="deciding() === request.id"
-                (click)="decide(request, 'approve')">Approve</button>
-              <button type="button" class="ghost-button" [disabled]="deciding() === request.id"
-                (click)="decide(request, 'deny')">Deny</button>
-            </div>
-          </div>
-        } @empty {
-          <p class="mt-3 text-[14px]" style="color: var(--text-2)">
-            No one is waiting. When someone on the list asks for access, it shows up here.
-          </p>
-        }
+        <ul class="max-h-[min(60svh,480px)] space-y-2 overflow-auto p-1">
+          @for (request of requests(); track request.id) {
+            <li class="inset p-3">
+              <div class="flex items-baseline justify-between gap-3">
+                <span class="text-[15px] font-semibold">{{ request.name }}</span>
+                <span class="text-[12px] text-2">{{ asked(request) }}</span>
+              </div>
+              <div class="mt-0.5 text-[14px] tabular-nums text-2">{{ request.phone }}</div>
+              <div class="mt-3 grid grid-cols-2 gap-2">
+                <button type="button" class="btn-primary" [disabled]="deciding() === request.id"
+                  (click)="decide(request, 'approve')">Approve</button>
+                <button type="button" class="btn-secondary" [disabled]="deciding() === request.id"
+                  (click)="decide(request, 'deny')">Deny</button>
+              </div>
+            </li>
+          } @empty {
+            <li class="px-2 pb-2 text-[14px] leading-relaxed text-2">
+              No one is waiting. When someone on the list asks for access, it shows up here.
+            </li>
+          }
+        </ul>
       </div>
     }
   `,
-  host: { class: "relative block" },
+  host: {
+    class: "relative block",
+    "(document:keydown.escape)": "open.set(false)",
+    "(document:click)": "closeOutside($event)",
+  },
 })
 export class AdminRequestsComponent implements OnInit, OnDestroy {
   private readonly api = inject(TrackerApi);
+  private readonly host = inject<ElementRef<HTMLElement>>(ElementRef);
   protected readonly open = signal(false);
   protected readonly requests = signal<AccessRequest[]>([]);
+  protected readonly label = computed(() => {
+    const count = this.requests().length;
+    return count === 1 ? "1 sign-in request waiting" : `${count || "No"} sign-in requests waiting`;
+  });
   protected readonly deciding = signal<string | null>(null);
   private timer = 0;
 
@@ -73,6 +84,10 @@ export class AdminRequestsComponent implements OnInit, OnDestroy {
   protected toggle(): void {
     this.open.set(!this.open());
     if (this.open()) this.poll();
+  }
+
+  protected closeOutside(event: MouseEvent): void {
+    if (this.open() && !this.host.nativeElement.contains(event.target as Node)) this.open.set(false);
   }
 
   protected asked(request: AccessRequest): string {

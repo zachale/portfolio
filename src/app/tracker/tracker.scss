@@ -1,271 +1,442 @@
 // Styles for the solar tracker portal (/tracker and tracker.zachlegesse.ca). Imported from
 // src/styles.scss and scoped under .tracker-root so nothing leaks into the portfolio.
+// The design system behind these tokens is design-system/solar-tracker-portal/ (MASTER.md, with
+// pages/dashboard.md overriding it for this page).
 
 .tracker-root {
-  --bg: #0a0f14;
-  --surface: rgba(16, 23, 30, 0.72);
-  --border: rgba(255, 255, 255, 0.08);
-  --text-1: #eef2f4;
-  --text-2: #a8b3bb;
-  --text-3: #6f7c86;
-  --accent: #f2b84b;
-  --accent-ink: #1d1406;
+  // Colour: slate neutrals from the IoT dashboard palette, with solar gold as the one accent.
+  // Green, lavender, coral and grey stay reserved for tracker status (telemetry.ts).
+  --bg: #0f172a;
+  --surface: rgba(27, 35, 54, 0.72);
+  --surface-solid: #1b2336;
+  --border: rgba(148, 163, 184, 0.16);
+  --border-strong: #64748b;
+  --text-1: #f8fafc;
+  --text-2: #94a3b8;
+  --text-3: #8492a6;
+  --accent: #fbbf24;
+  --accent-hover: #fcd34d;
+  --on-accent: #0f172a;
+  --ring: #ffffff;
+  --danger: #dc2626;
+  --danger-text: #fca5a5;
+  // Type over the 3D scene is near-white only, on a scrim measured against a noon sky.
+  --on-scene-2: #e2e8f0;
+  --scrim: 15, 23, 42;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --shadow-pop: 0 16px 40px rgba(2, 6, 23, 0.55);
+  --ease-out: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --dur-fast: 150ms;
+  --dur-base: 200ms;
+  --dur-enter: 350ms;
 
   display: block;
   min-height: 100svh;
   color: var(--text-1);
-  font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
-  font-feature-settings: "ss01";
+  font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
   background:
-    radial-gradient(90% 50% at 20% 0%, color-mix(in srgb, var(--horizon, #0b1424) 22%, transparent), transparent 70%),
+    radial-gradient(80% 45% at 30% 0%, color-mix(in srgb, var(--horizon, #0b1424) 18%, transparent), transparent 70%),
     var(--bg);
   transition: background 1.2s ease;
 
   // The portfolio's global ng-zorro and Material typography colour headings and links for a light page.
   :where(h1, h2, h3, p, dl, dd) { margin: 0; color: inherit; }
   a { color: inherit; }
+  button { cursor: pointer; touch-action: manipulation; }
+  button:disabled { cursor: not-allowed; }
 
-  .display {
-    font-family: "Instrument Serif", ui-serif, Georgia, serif;
-    font-weight: 400;
-    letter-spacing: -0.01em;
-  }
-
+  // Type roles
   .eyebrow {
-    font-family: "Geist Mono", ui-monospace, monospace;
-    font-size: 11px;
-    letter-spacing: 0.14em;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--text-2);
   }
+  .section-title { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.3; }
+  .stat {
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+  }
+  .unit { font-weight: 500; letter-spacing: 0; }
+  .text-2 { color: var(--text-2); }
+  .text-3 { color: var(--text-3); }
+  .on-scene-2 { color: var(--on-scene-2); }
 
-  .glass {
+  // Surfaces
+  .card {
     background: var(--surface);
     border: 1px solid var(--border);
-    backdrop-filter: blur(18px) saturate(1.2);
-    -webkit-backdrop-filter: blur(18px) saturate(1.2);
+    border-radius: var(--radius-lg);
+    backdrop-filter: blur(16px) saturate(1.2);
+    -webkit-backdrop-filter: blur(16px) saturate(1.2);
   }
-
-  .glass-strong {
-    background: rgba(12, 18, 24, 0.92);
+  .popover {
+    background: rgba(27, 35, 54, 0.97);
     border: 1px solid var(--border);
-    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-pop);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
+    animation: tracker-pop var(--dur-base) var(--ease-out) both;
+  }
+  .inset {
+    background: rgba(148, 163, 184, 0.07);
+    border-radius: var(--radius-md);
   }
 
-  // Keeps white type legible over a noon sky, and blends the scene into the page.
+  .app-header {
+    @media (min-width: 1024px) {
+      background: rgba(var(--scrim), 0.86);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+  }
+
+  // The scene and the numbers over it
+  .hero {
+    --scrim-top-start: 1;
+    p { text-shadow: 0 1px 10px rgba(2, 6, 23, 0.4); }
+    @media (min-width: 1024px) {
+      --scrim-top-start: 0.82;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+    }
+  }
   .scrim-top {
-    background: linear-gradient(to bottom, rgba(6, 10, 14, 0.78), rgba(6, 10, 14, 0.5) 40%, transparent);
+    background: linear-gradient(
+      to bottom,
+      rgba(var(--scrim), var(--scrim-top-start, 0.82)),
+      rgba(var(--scrim), 0.7) 55%,
+      rgba(var(--scrim), 0)
+    );
   }
-  .hero p { text-shadow: 0 1px 12px rgba(0, 0, 0, 0.35); }
   .scrim-bottom {
-    background: linear-gradient(to top, var(--bg) 4%, rgba(10, 15, 20, 0.6) 45%, transparent);
-  }
-  @media (min-width: 1024px) {
-    .scrim-bottom {
-      background: linear-gradient(to top, rgba(6, 10, 14, 0.82), rgba(6, 10, 14, 0.35) 55%, transparent);
+    background: linear-gradient(to top, rgb(var(--scrim)) 0%, rgba(var(--scrim), 0.82) 34%, rgba(var(--scrim), 0));
+    @media (min-width: 1024px) {
+      background: linear-gradient(to top, rgba(var(--scrim), 0.9), rgba(var(--scrim), 0.6) 45%, rgba(var(--scrim), 0));
     }
   }
 
   .brand-mark {
     display: grid;
+    flex: none;
     place-items: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 12px;
-    color: var(--accent-ink);
-    background: radial-gradient(circle at 30% 30%, #ffd98a, var(--accent));
-    box-shadow: 0 0 24px rgba(242, 184, 75, 0.35);
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    color: var(--on-accent);
+    background: radial-gradient(circle at 30% 30%, #fde68a, var(--accent));
+    box-shadow: 0 0 24px rgba(251, 191, 36, 0.3);
   }
 
+  // A status icon on a tint of its own colour; the label beside it carries the meaning.
+  .status-badge {
+    display: inline-grid;
+    flex: none;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 99px;
+    color: var(--status);
+    background: color-mix(in srgb, var(--status) 22%, rgba(var(--scrim), 0.6));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--status) 45%, transparent);
+  }
   .status-dot {
+    display: inline-block;
+    flex: none;
     width: 8px;
     height: 8px;
     border-radius: 99px;
-    box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 22%, transparent);
+    background: var(--status);
   }
 
   .freshness-dot {
-    width: 7px;
-    height: 7px;
+    flex: none;
+    width: 8px;
+    height: 8px;
     border-radius: 99px;
-    background: #2fbf5b;
-    &[data-tone="delayed"] { background: #fab219; }
-    &[data-tone="offline"] { background: #e5484d; }
+    background: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+    &[data-tone="delayed"] { background: var(--accent); box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2); }
+    &[data-tone="offline"] { background: var(--danger-text); box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.2); }
   }
 
+  // Controls: every target is at least 44 × 44 px.
   .icon-button {
+    position: relative;
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    color: var(--text-1);
+    background: rgba(148, 163, 184, 0.1);
+    border: 1px solid var(--border);
+    transition: background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+    &:hover { background: rgba(148, 163, 184, 0.18); }
+    &:active { transform: scale(0.96); }
+    &[aria-expanded="true"] { background: rgba(148, 163, 184, 0.22); }
+  }
+  .badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
     display: grid;
     place-items: center;
-    width: 42px;
-    height: 42px;
-    border-radius: 14px;
-    color: var(--text-1);
-    background: rgba(255, 255, 255, 0.08);
-    border: 1px solid var(--border);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    transition: background 0.2s;
-    &:hover { background: rgba(255, 255, 255, 0.14); }
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #ffffff;
+    background: var(--danger);
+    box-shadow: 0 0 0 2px var(--bg);
   }
 
-  .cta, .ghost-button, .live-button {
+  .btn-primary, .btn-secondary {
     display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: var(--radius-md);
+    font-size: 15px;
     font-weight: 600;
-    transition: transform 0.15s, background 0.2s, opacity 0.2s;
-    &:active { transform: scale(0.98); }
-    &:disabled { opacity: 0.45; cursor: not-allowed; }
+    transition: background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out), opacity var(--dur-fast);
+    &:active:not(:disabled) { transform: scale(0.98); }
+    &:disabled { opacity: 0.45; }
   }
-  .cta {
-    min-height: 52px;
-    border-radius: 16px;
-    color: var(--accent-ink);
+  .btn-primary {
+    color: var(--on-accent);
     background: var(--accent);
-    font-size: 16px;
-    &:hover:not(:disabled) { background: #f7c869; }
+    &:hover:not(:disabled) { background: var(--accent-hover); }
   }
-  .cta-small { min-height: 42px; border-radius: 12px; font-size: 14px; }
-  .ghost-button {
-    min-height: 42px;
-    padding: 0 14px;
-    border-radius: 12px;
-    font-size: 14px;
+  .btn-secondary {
     color: var(--text-1);
-    background: rgba(255, 255, 255, 0.07);
+    background: rgba(148, 163, 184, 0.1);
     border: 1px solid var(--border);
+    &:hover:not(:disabled) { background: rgba(148, 163, 184, 0.18); }
   }
-  .live-button {
-    padding: 5px 12px;
-    border-radius: 99px;
-    font-size: 12px;
-    color: var(--accent-ink);
-    background: var(--accent);
-  }
+  .btn-lg { min-height: 52px; font-size: 16px; }
+
   .link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
     color: var(--text-2);
     text-decoration: underline;
     text-underline-offset: 3px;
+    transition: color var(--dur-fast);
     &:hover { color: var(--text-1); }
   }
+
   .menu-item {
     display: flex;
     width: 100%;
+    min-height: 44px;
     align-items: center;
     gap: 10px;
-    padding: 10px 12px;
-    border-radius: 10px;
-    font-size: 14px;
-    &:hover { background: rgba(255, 255, 255, 0.07); }
+    padding: 0 12px;
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-weight: 500;
+    transition: background var(--dur-fast);
+    &:hover { background: rgba(148, 163, 184, 0.12); }
   }
 
-  .field-label { font-size: 13px; font-weight: 500; color: var(--text-2); }
+  .field-label { display: block; font-size: 14px; font-weight: 600; color: var(--text-1); }
   .field {
     display: block;
     width: 100%;
     min-height: 52px;
     padding: 0 16px;
-    border-radius: 16px;
+    border-radius: var(--radius-md);
     font-size: 17px; // 16px or more keeps iOS from zooming on focus
     color: var(--text-1);
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(var(--scrim), 0.6);
+    border: 1px solid var(--border-strong);
     outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
+    transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
     &::placeholder { color: var(--text-3); }
-    &:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(242, 184, 75, 0.18); }
+    &:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.3); }
+  }
+  .check-row {
+    display: flex;
+    min-height: 44px;
+    cursor: pointer;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: var(--text-2);
+    input { width: 20px; height: 20px; flex: none; accent-color: var(--accent); }
   }
 
+  // Segmented control: buttons with aria-pressed. The pill is drawn inside a full-height target.
   .segmented {
     display: inline-flex;
-    padding: 3px;
-    border-radius: 13px;
-    background: rgba(255, 255, 255, 0.06);
+    border-radius: var(--radius-md);
+    background: rgba(148, 163, 184, 0.08);
     border: 1px solid var(--border);
     button {
+      position: relative;
+      isolation: isolate;
       display: inline-flex;
       align-items: center;
-      min-width: 44px;
-      min-height: 34px;
       justify-content: center;
+      gap: 6px;
+      min-width: 44px;
+      min-height: 44px;
       padding: 0 10px;
-      border-radius: 10px;
-      font-family: "Geist Mono", ui-monospace, monospace;
-      font-size: 12px;
+      font-size: 13px;
+      font-weight: 600;
       color: var(--text-2);
-      transition: background 0.2s, color 0.2s;
-      &.active { color: var(--accent-ink); background: var(--accent); }
+      transition: color var(--dur-fast);
+      &::before {
+        content: "";
+        position: absolute;
+        inset: 4px;
+        z-index: -1;
+        border-radius: var(--radius-sm);
+        transition: background var(--dur-base) var(--ease-out);
+      }
+      &:hover { color: var(--text-1); }
+      &[aria-pressed="true"] {
+        color: var(--on-accent);
+        &::before { background: var(--accent); }
+      }
     }
   }
 
   .tile {
-    padding: 14px;
-    border-radius: 20px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 16px;
     dt {
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-size: 12px;
+      gap: 8px;
+      font-size: 13px;
+      font-weight: 500;
       color: var(--text-2);
     }
     dd {
-      margin-top: 10px;
-      font-size: 26px;
-      font-weight: 300;
+      margin-top: 12px;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
       line-height: 1;
       font-variant-numeric: tabular-nums;
-      small { font-size: 14px; color: var(--text-2); }
+      small { font-size: 14px; font-weight: 500; letter-spacing: 0; color: var(--text-2); }
     }
+  }
+  // Until the first readings land, the tiles hold their size with a placeholder instead of zeros.
+  .is-loading .tile dd {
+    position: relative;
+    visibility: hidden;
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 72px;
+      visibility: visible;
+      border-radius: var(--radius-sm);
+      background: linear-gradient(100deg, rgba(148, 163, 184, 0.06) 30%, rgba(148, 163, 184, 0.14) 50%, rgba(148, 163, 184, 0.06) 70%);
+      background-size: 200% 100%;
+      animation: tracker-shimmer 1.4s linear infinite;
+    }
+  }
+  .tile-icon {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+    color: var(--tone);
+    background: color-mix(in srgb, var(--tone) 16%, transparent);
+  }
+
+  .data-table {
+    width: 100%;
+    text-align: left;
+    font-size: 14px;
+    font-variant-numeric: tabular-nums;
+    th {
+      position: sticky;
+      top: 0;
+      padding: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-2);
+      background: var(--surface-solid);
+      box-shadow: inset 0 -1px 0 var(--border);
+    }
+    td { padding: 10px 12px; border-top: 1px solid var(--border); white-space: nowrap; }
+    tbody tr:hover { background: rgba(148, 163, 184, 0.06); }
   }
 
   .shimmer {
-    background: linear-gradient(100deg, rgba(255, 255, 255, 0.03) 30%, rgba(255, 255, 255, 0.08) 50%, rgba(255, 255, 255, 0.03) 70%);
+    background: linear-gradient(100deg, rgba(148, 163, 184, 0.06) 30%, rgba(148, 163, 184, 0.14) 50%, rgba(148, 163, 184, 0.06) 70%);
     background-size: 200% 100%;
     animation: tracker-shimmer 1.4s linear infinite;
   }
 
   .waiting-orb {
     flex: none;
-    width: 34px;
-    height: 34px;
+    width: 36px;
+    height: 36px;
     border-radius: 99px;
-    background: radial-gradient(circle at 35% 35%, #ffe0a3, var(--accent));
+    background: radial-gradient(circle at 35% 35%, #fde68a, var(--accent));
     animation: tracker-breathe 2.4s ease-in-out infinite;
   }
 
-  .rise { animation: tracker-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+  .rise { animation: tracker-rise var(--dur-enter) var(--ease-out) both; }
 
-  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+  .field:focus-visible { outline: none; }
 
   @media (prefers-reduced-motion: reduce) {
-    .rise, .shimmer, .waiting-orb { animation: none; }
+    .rise, .shimmer, .waiting-orb, .popover, .is-loading .tile dd::after { animation: none; }
+    *, *::before { transition-duration: 0s !important; }
   }
 }
 
 // The expanded history is a native <dialog>, so it lives in the top layer, outside .tracker-root's box
 // but still inside its DOM (and so its custom properties).
 .tracker-root .expanded-dialog {
-  width: min(1400px, 100vw - 24px);
-  height: min(900px, 100dvh - 24px);
+  width: min(1400px, 100vw - 32px);
+  height: min(900px, 100dvh - 32px);
   max-width: none;
   max-height: none;
   margin: auto;
   padding: 0;
-  border-radius: 28px;
+  border-radius: var(--radius-xl);
   color: var(--text-1);
-  background: #0e151c;
+  background: var(--surface-solid);
   border: 1px solid var(--border);
-  &::backdrop { background: rgba(3, 6, 10, 0.7); backdrop-filter: blur(6px); }
+  box-shadow: var(--shadow-pop);
+  &[open] { animation: tracker-pop var(--dur-enter) var(--ease-out) both; }
+  &::backdrop { background: rgba(2, 6, 23, 0.72); backdrop-filter: blur(6px); }
   @media (max-width: 640px) {
     width: 100vw;
     height: 100dvh;
+    border: 0;
     border-radius: 0;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    &[open] { animation: none; }
   }
 }
 
@@ -274,11 +445,16 @@
 }
 
 @keyframes tracker-breathe {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(242, 184, 75, 0.45); }
-  50% { box-shadow: 0 0 0 12px rgba(242, 184, 75, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.45); }
+  50% { box-shadow: 0 0 0 12px rgba(251, 191, 36, 0); }
 }
 
 @keyframes tracker-rise {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes tracker-pop {
+  from { opacity: 0; transform: translateY(4px) scale(0.98); }
   to { opacity: 1; transform: none; }
 }

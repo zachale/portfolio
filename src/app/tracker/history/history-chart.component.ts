@@ -25,8 +25,9 @@ export const SERIES = {
 
 const STATUS_ORDER: (TrackerStatus | null)[] = ["ACTIVE", "NIGHT", "SAFE", "AWAY", null];
 const GAP_MS = 20 * 60 * 1000;
-const INK = { primary: "#eef2f4", secondary: "#a8b3bb", muted: "#6f7c86", grid: "rgba(255,255,255,0.06)" };
-const FONT = "Geist, ui-sans-serif, system-ui, sans-serif";
+// Ink and type from the portal tokens (tracker.scss); axis text stays at 4.5:1 or more on the card.
+const INK = { primary: "#f8fafc", secondary: "#94a3b8", muted: "#8492a6", grid: "rgba(148,163,184,0.12)" };
+const FONT = "'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif";
 
 const hourLabel = new Intl.DateTimeFormat("en-CA", { timeZone: SITE_TIME_ZONE, hour: "numeric" });
 const dayLabel = new Intl.DateTimeFormat("en-CA", { timeZone: SITE_TIME_ZONE, month: "short", day: "numeric" });
@@ -136,14 +137,14 @@ export class HistoryChartComponent implements AfterViewInit, OnDestroy {
     let y = 8;
     const addTitle = (text: string, color: string | null) => titles.push({
       text: color ? `{dot|●} ${text}` : text, left: 0, top: y,
-      textStyle: { color: INK.secondary, fontFamily: FONT, fontSize: 12, fontWeight: 500, rich: { dot: { color: color ?? INK.muted, fontSize: 10 } } },
+      textStyle: { color: INK.secondary, fontFamily: FONT, fontSize: 12, fontWeight: 600, rich: { dot: { color: color ?? INK.muted, fontSize: 10 } } },
     });
     const addAxes = (top: number, h: number, last: boolean, yAxis: object) => {
-      grids.push({ left: 34, right: 10, top, height: h });
+      grids.push({ left: 34, right: 20, top, height: h });
       xAxes.push({
         type: "time", gridIndex: grids.length - 1, min, max: now,
         axisLine: { show: false }, axisTick: { show: false }, splitLine: { show: false },
-        axisLabel: { show: last, color: INK.muted, fontFamily: FONT, fontSize: 11, hideOverlap: true, formatter: labelFor },
+        axisLabel: { show: last, color: INK.muted, fontFamily: FONT, fontSize: 12, hideOverlap: true, formatter: labelFor },
         axisPointer: { show: true, snap: false, label: { show: false }, lineStyle: { color: "rgba(255,255,255,0.35)", width: 1 } },
       });
       yAxes.push({ gridIndex: grids.length - 1, ...yAxis });
@@ -162,7 +163,7 @@ export class HistoryChartComponent implements AfterViewInit, OnDestroy {
         return {
           type: "rect",
           shape: { x: start[0], y: start[1], width: Math.max(1, end[0] - start[0] - 1), height: end[1] - start[1], r: 3 },
-          style: { fill: status ? STATUS_META[status].color : "rgba(255,255,255,0.08)", opacity: status === "NIGHT" ? 0.55 : 0.9 },
+          style: { fill: status ? STATUS_META[status].color : "rgba(148,163,184,0.12)", opacity: status === "NIGHT" ? 0.55 : 0.9 },
         };
       },
     });
@@ -174,7 +175,7 @@ export class HistoryChartComponent implements AfterViewInit, OnDestroy {
       const index = grids.length;
       addAxes(y + titleH, chartH, i === metrics.length - 1, {
         type: "value", min: metric.min, max: metric.max, scale: metric.min === undefined, splitNumber: 2,
-        axisLabel: { color: INK.muted, fontFamily: FONT, fontSize: 11 },
+        axisLabel: { color: INK.muted, fontFamily: FONT, fontSize: 12 },
         splitLine: { lineStyle: { color: INK.grid } },
       });
       series.push({
@@ -190,7 +191,7 @@ export class HistoryChartComponent implements AfterViewInit, OnDestroy {
         markLine: metric.key === "percent" ? {
           silent: true, symbol: "none", data: [{ yAxis: 50 }],
           lineStyle: { color: "rgba(255,255,255,0.18)", type: [3, 4], width: 1 },
-          label: { formatter: "flat", color: INK.muted, fontFamily: FONT, fontSize: 10, position: "insideEndTop" },
+          label: { formatter: "flat", color: INK.muted, fontFamily: FONT, fontSize: 11, position: "insideEndTop" },
         } : undefined,
       });
       y += titleH + chartH + gap;
@@ -209,11 +210,11 @@ export class HistoryChartComponent implements AfterViewInit, OnDestroy {
       tooltip: {
         trigger: "axis",
         confine: true,
-        backgroundColor: "rgba(12,18,24,0.94)",
-        borderColor: "rgba(255,255,255,0.1)",
+        backgroundColor: "rgba(27,35,54,0.97)",
+        borderColor: "rgba(148,163,184,0.2)",
         padding: [10, 12],
         textStyle: { color: INK.primary, fontFamily: FONT, fontSize: 12 },
-        extraCssText: "border-radius:12px;box-shadow:0 12px 32px rgba(0,0,0,0.45);backdrop-filter:blur(8px);",
+        extraCssText: "border-radius:12px;box-shadow:0 16px 40px rgba(2,6,23,0.55);backdrop-filter:blur(8px);",
         formatter: (params: { axisValue: number }[]) => {
           const r = nearest(readings, params[0]?.axisValue);
           if (!r) return "";
@@ -231,10 +232,10 @@ export class HistoryChartComponent implements AfterViewInit, OnDestroy {
         { type: "inside", xAxisIndex: allX, filterMode: "none" },
         {
           type: "slider", xAxisIndex: allX, filterMode: "none", bottom: 10, height: 24,
-          borderColor: "rgba(255,255,255,0.08)", backgroundColor: "rgba(255,255,255,0.03)",
+          borderColor: "rgba(148,163,184,0.16)", backgroundColor: "rgba(148,163,184,0.05)",
           fillerColor: "rgba(201,133,0,0.16)", dataBackground: { lineStyle: { color: "rgba(255,255,255,0.2)" }, areaStyle: { color: "rgba(255,255,255,0.05)" } },
           handleStyle: { color: "#c98500", borderColor: "#c98500" }, moveHandleStyle: { color: "rgba(201,133,0,0.5)" },
-          textStyle: { color: INK.muted, fontFamily: FONT, fontSize: 10 }, labelFormatter: (t: number) => labelFor(t),
+          textStyle: { color: INK.muted, fontFamily: FONT, fontSize: 11 }, labelFormatter: (t: number) => labelFor(t),
         },
       ] : [],
     }, { notMerge: true });
