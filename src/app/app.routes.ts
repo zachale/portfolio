@@ -1,14 +1,10 @@
 import { Routes } from "@angular/router";
 
-/** tracker.zachlegesse.ca serves the solar tracker portal at its root. */
-export const onTrackerHost = () => location.hostname.startsWith("tracker.");
-
-const trackerPage = () =>
-  import("./tracker/tracker-page.component").then((m) => m.TrackerPageComponent);
-
 export const routes: Routes = [
-  { path: "", canMatch: [onTrackerHost], loadComponent: trackerPage },
-  { path: "tracker", loadComponent: trackerPage },
+  {
+    path: "tracker",
+    loadComponent: () => import("./tracker/tracker-page.component").then((m) => m.TrackerPageComponent),
+  },
   {
     path: "",
     loadChildren: () =>

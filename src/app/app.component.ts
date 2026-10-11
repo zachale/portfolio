@@ -5,7 +5,6 @@ import { FlexLayoutModule } from "@angular/flex-layout";
 import { filter, map } from "rxjs";
 import { NavBarModule } from "./nav-bar/nav-bar.module";
 import { FooterModule } from "./home-page/footer/footer.module";
-import { onTrackerHost } from "./app.routes";
 
 @Component({
   selector: "app-root",
@@ -22,8 +21,8 @@ export class AppComponent {
   readonly bare = toSignal(
     this.router.events.pipe(
       filter((event) => event instanceof NavigationEnd),
-      map(() => onTrackerHost() || this.router.url.startsWith("/tracker")),
+      map(() => this.router.url.startsWith("/tracker")),
     ),
-    { initialValue: onTrackerHost() || location.pathname.startsWith("/tracker") },
+    { initialValue: location.pathname.startsWith("/tracker") },
   );
 }
