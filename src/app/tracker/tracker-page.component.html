@@ -48,8 +48,8 @@
       <section class="hero relative h-[clamp(560px,calc(100svh-64px),740px)] overflow-hidden lg:sticky lg:top-6 lg:h-[calc(100svh-48px)] lg:min-h-[600px]"
         aria-label="Live view of the tracker">
         <tracker-scene-view class="absolute inset-0" [moment]="moment()" [framing]="dashboardFraming" (atmosphere)="atmosphere.set($event)" />
-        <div class="scrim-top pointer-events-none absolute inset-x-0 top-0 h-[58%]"></div>
-        <div class="scrim-bottom pointer-events-none absolute inset-x-0 bottom-0 h-[40%]"></div>
+        <div class="scrim-top pointer-events-none absolute inset-x-0 top-0 h-[42%]"></div>
+        <div class="scrim-bottom pointer-events-none absolute inset-x-0 bottom-0 h-[30%]"></div>
 
         @if (latest(); as r) {
           <div class="absolute inset-x-0 top-0 z-10 grid grid-cols-[minmax(0,1fr)_auto] gap-4 p-4 pt-[max(76px,calc(env(safe-area-inset-top)+64px))] sm:p-6 sm:pt-20 lg:p-8">

@@ -95,10 +95,11 @@
 
   // The scene and the numbers over it
   .hero {
-    --scrim-top-start: 1;
-    p { text-shadow: 0 1px 10px rgba(2, 6, 23, 0.4); }
+    --scrim-top-start: 0.62;
+    // A soft shadow under the type keeps it legible where the lighter scrim lets the sky through.
+    p { text-shadow: 0 1px 2px rgba(2, 6, 23, 0.35), 0 1px 14px rgba(2, 6, 23, 0.6); }
     @media (min-width: 1024px) {
-      --scrim-top-start: 0.82;
+      --scrim-top-start: 0.55;
       border: 1px solid var(--border);
       border-radius: var(--radius-xl);
     }
@@ -106,15 +107,15 @@
   .scrim-top {
     background: linear-gradient(
       to bottom,
-      rgba(var(--scrim), var(--scrim-top-start, 0.82)),
-      rgba(var(--scrim), 0.7) 55%,
+      rgba(var(--scrim), var(--scrim-top-start, 0.72)),
+      rgba(var(--scrim), 0.3) 55%,
       rgba(var(--scrim), 0)
     );
   }
   .scrim-bottom {
-    background: linear-gradient(to top, rgb(var(--scrim)) 0%, rgba(var(--scrim), 0.82) 34%, rgba(var(--scrim), 0));
+    background: linear-gradient(to top, rgb(var(--scrim)) 0%, rgba(var(--scrim), 0.42) 40%, rgba(var(--scrim), 0));
     @media (min-width: 1024px) {
-      background: linear-gradient(to top, rgba(var(--scrim), 0.9), rgba(var(--scrim), 0.6) 45%, rgba(var(--scrim), 0));
+      background: linear-gradient(to top, rgba(var(--scrim), 0.62), rgba(var(--scrim), 0.28) 50%, rgba(var(--scrim), 0));
     }
   }
 

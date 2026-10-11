@@ -41,8 +41,8 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
   private readonly api = inject(TrackerApi);
 
   protected readonly session = signal<Session | null | undefined>(undefined);
-  /** The history range; one hour by default. */
-  protected readonly hours = signal(1);
+  /** The history range; the last day by default. */
+  protected readonly hours = signal(24);
   private readonly cache = signal(new Map<number, Telemetry>());
   protected readonly loading = signal(false);
   protected readonly failed = signal(false);

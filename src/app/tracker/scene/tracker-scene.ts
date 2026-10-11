@@ -6,6 +6,29 @@ import { TrackerStatus, STATUS_META } from "../telemetry";
 import { DASHBOARD_FRAMING, Framing, LOGIN_FRAMING_NARROW, LOGIN_FRAMING_WIDE } from "./framing";
 import { sunAt, sunDirection } from "./sun";
 
+/** A sky-sized sphere shaded from `horizon` up to `top`, faded in over the sky by its opacity. */
+function buildDome(top: number, horizon: number, renderOrder: number): THREE.Mesh<THREE.SphereGeometry, THREE.ShaderMaterial> {
+  const material = new THREE.ShaderMaterial({
+    side: THREE.BackSide,
+    transparent: true,
+    depthWrite: false,
+    fog: false,
+    uniforms: {
+      opacity: { value: 0 },
+      top: { value: new THREE.Color(top) },
+      horizon: { value: new THREE.Color(horizon) },
+    },
+    vertexShader: `varying vec3 vDir; void main() { vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+    fragmentShader: `uniform float opacity; uniform vec3 top; uniform vec3 horizon; varying vec3 vDir;
+      void main() { float h = smoothstep(-0.05, 0.55, vDir.y); gl_FragColor = vec4(mix(horizon, top, h), opacity);
+      #include <colorspace_fragment>
+      }`,
+  });
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(2800, 32, 16), material);
+  dome.renderOrder = renderOrder;
+  return dome;
+}
+
 /** Paints each instance in its id colour (see TrackerScene.placePlantings). */
 function idMaterial(side: THREE.Side): THREE.ShaderMaterial {
   return new THREE.ShaderMaterial({
@@ -105,6 +128,8 @@ export function tiltDegrees(percent: number): number {
   return (Math.min(100, Math.max(0, percent)) - 50) * DEGREES_PER_PERCENT;
 }
 
+// The haze where the sky meets the trees on a clear day, which fog fades distance into.
+const DAY_HORIZON = 0xa9d1f5;
 const DECK_TOP = 0.32;
 // The deck is square around the post; the walk joins one of its corners.
 const DECK_HALF = 1.16;
@@ -133,6 +158,9 @@ const ARRAY_HALF_LENGTH = 1.5 * MODULE_LENGTH + MODULE_GAP;
 
 // Day for night: after sunset the scene is lit like a film night scene shot in daylight, by a
 // cool moon and a blue sky fill, so it stays readable and simply turns blue.
+// A clear day's sky, laid over the physical sky model, which goes milky white near the horizon:
+// the only part of the sky this camera sees.
+const DAY_SKY_TOP = 0x4a95dc;
 const NIGHT_SKY_TOP = 0x0c1834;
 const NIGHT_HORIZON = 0x283d68;
 const TWILIGHT_SKY_TOP = 0x1d2d5a;
@@ -229,6 +257,8 @@ export class TrackerScene {
 
   private readonly sky = new Sky();
   private readonly envSky = new Sky();
+  private readonly dayDome: THREE.Mesh<THREE.SphereGeometry, THREE.ShaderMaterial>;
+  private readonly envDayDome: THREE.Mesh<THREE.SphereGeometry, THREE.ShaderMaterial>;
   private readonly nightDome: THREE.Mesh<THREE.SphereGeometry, THREE.ShaderMaterial>;
   private readonly envNightDome: THREE.Mesh<THREE.SphereGeometry, THREE.ShaderMaterial>;
   private readonly envScene = new THREE.Scene();
@@ -280,21 +310,24 @@ export class TrackerScene {
     host.appendChild(this.renderer.domElement);
     this.pmrem = new THREE.PMREMGenerator(this.renderer);
 
-    this.scene.fog = new THREE.Fog(0xb9cfe3, 70, 360);
+    this.scene.fog = new THREE.Fog(DAY_HORIZON, 70, 360);
 
     this.sky.scale.setScalar(3000);
     this.envSky.scale.setScalar(3000);
     for (const sky of [this.sky, this.envSky]) {
       const u = sky.material.uniforms;
-      u["turbidity"].value = 2.4;
-      u["rayleigh"].value = 2.2;
-      u["mieCoefficient"].value = 0.003;
+      // Clear, dry northern air: little haze, so the sky reads properly blue down to the trees.
+      u["turbidity"].value = 1.6;
+      u["rayleigh"].value = 3;
+      u["mieCoefficient"].value = 0.0025;
       u["mieDirectionalG"].value = 0.82;
     }
-    this.nightDome = this.buildNightDome();
+    this.dayDome = buildDome(DAY_SKY_TOP, DAY_HORIZON, 1);
+    this.envDayDome = this.dayDome.clone();
+    this.nightDome = buildDome(NIGHT_SKY_TOP, NIGHT_HORIZON, 2);
     this.envNightDome = this.nightDome.clone();
-    this.scene.add(this.sky, this.nightDome);
-    this.envScene.add(this.envSky, this.envNightDome);
+    this.scene.add(this.sky, this.dayDome, this.nightDome);
+    this.envScene.add(this.envSky, this.envDayDome, this.envNightDome);
 
     this.stars = this.buildStars();
     this.scene.add(this.stars);
@@ -463,7 +496,7 @@ export class TrackerScene {
       target[key] = value;
       restore.push(() => (target[key] = previous));
     };
-    for (const object of [this.sky, this.nightDome, this.stars, this.trackerRig, this.anemometer]) swap(object, "visible", false);
+    for (const object of [this.sky, this.dayDome, this.nightDome, this.stars, this.trackerRig, this.anemometer]) swap(object, "visible", false);
     const cover = new THREE.MeshBasicMaterial({ color: 0x000000 });
     const materials: THREE.Material[] = [cover];
     this.scene.traverse((object) => {
@@ -559,6 +592,9 @@ export class TrackerScene {
     const golden = smoothstep(-5, 1, altitude) * (1 - smoothstep(5, 18, altitude));
 
     for (const sky of [this.sky, this.envSky]) sky.material.uniforms["sunPosition"].value.copy(dir);
+    // The blue gives way to the physical sky's own colours around sunrise and sunset.
+    const blue = 0.85 * day * (1 - golden);
+    for (const dome of [this.dayDome, this.envDayDome]) dome.material.uniforms["opacity"].value = blue;
     const domeOpacity = Math.min(0.96, 1 - smoothstep(-7, 1, altitude));
     for (const dome of [this.nightDome, this.envNightDome]) dome.material.uniforms["opacity"].value = domeOpacity;
     this.stars.material.opacity = starry * 0.95;
@@ -570,7 +606,7 @@ export class TrackerScene {
 
     const horizon = new THREE.Color(NIGHT_HORIZON)
       .lerp(new THREE.Color(TWILIGHT_HORIZON), dusk)
-      .lerp(new THREE.Color(0xb9cfe3), day)
+      .lerp(new THREE.Color(DAY_HORIZON), day)
       .lerp(new THREE.Color(0xe8b58c), golden * 0.55);
     (this.scene.fog as THREE.Fog).color.copy(horizon);
 
@@ -615,28 +651,6 @@ export class TrackerScene {
     return material;
   }
 
-  private buildNightDome() {
-    const material = new THREE.ShaderMaterial({
-      side: THREE.BackSide,
-      transparent: true,
-      depthWrite: false,
-      fog: false,
-      uniforms: {
-        opacity: { value: 0 },
-        top: { value: new THREE.Color(NIGHT_SKY_TOP) },
-        horizon: { value: new THREE.Color(NIGHT_HORIZON) },
-      },
-      vertexShader: `varying vec3 vDir; void main() { vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
-      fragmentShader: `uniform float opacity; uniform vec3 top; uniform vec3 horizon; varying vec3 vDir;
-        void main() { float h = smoothstep(-0.05, 0.55, vDir.y); gl_FragColor = vec4(mix(horizon, top, h), opacity);
-        #include <colorspace_fragment>
-        }`,
-    });
-    const dome = new THREE.Mesh(new THREE.SphereGeometry(2800, 32, 16), material);
-    dome.renderOrder = 1;
-    return dome;
-  }
-
   private buildStars() {
     const rand = random(7);
     const count = 1400;
@@ -653,7 +667,7 @@ export class TrackerScene {
       color: 0xdfe8ff, size: 1.6, sizeAttenuation: false, transparent: true, opacity: 0, depthWrite: false, fog: false,
     });
     const stars = new THREE.Points(geometry, material);
-    stars.renderOrder = 2;
+    stars.renderOrder = 3;
     return stars;
   }
 
