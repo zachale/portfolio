@@ -65,11 +65,11 @@ function instancedMesh(planting: Planting, keep: Set<number> | null): THREE.Inst
  */
 function frameCamera(camera: THREE.PerspectiveCamera, width: number, height: number, framing: Framing): void {
   camera.aspect = width / height;
-  // Fit the width on wide screens; on tall ones cap the lens and let the sides crop, or the
-  // frame fills with sky and treetops.
+  // Fit 50° across on wide screens, even very wide ones (the vegetation is only built for that
+  // much); on tall ones cap the lens and let the sides crop, or the frame fills with sky.
   const horizontal = THREE.MathUtils.degToRad(50);
   const vertical = 2 * Math.atan(Math.tan(horizontal / 2) / camera.aspect);
-  camera.fov = THREE.MathUtils.clamp(THREE.MathUtils.radToDeg(vertical), 28, 56);
+  camera.fov = THREE.MathUtils.clamp(THREE.MathUtils.radToDeg(vertical), 16, 56);
   camera.near = 0.3;
   camera.far = 4000;
   // Shift the projection (not the camera) so the tracker lands where the layout has room for it.
@@ -390,18 +390,22 @@ export class TrackerScene {
     this.resizeObserver.disconnect();
     this.intersectionObserver.disconnect();
     document.removeEventListener("visibilitychange", this.updateRunning);
-    this.scene.traverse((object) => {
-      const mesh = object as THREE.Mesh;
-      mesh.geometry?.dispose();
-      const materials = Array.isArray(mesh.material) ? mesh.material : mesh.material ? [mesh.material] : [];
-      for (const material of materials) {
-        for (const value of Object.values(material)) if (value instanceof THREE.Texture) value.dispose();
-        material.dispose();
-      }
-    });
+    for (const scene of [this.scene, this.envScene]) {
+      scene.traverse((object) => {
+        const mesh = object as THREE.Mesh;
+        mesh.geometry?.dispose();
+        const materials = Array.isArray(mesh.material) ? mesh.material : mesh.material ? [mesh.material] : [];
+        for (const material of materials) {
+          for (const value of Object.values(material)) if (value instanceof THREE.Texture) value.dispose();
+          material.dispose();
+        }
+      });
+    }
     this.envTarget?.dispose();
     this.pmrem.dispose();
     this.renderer.dispose();
+    // Browsers allow only a handful of WebGL contexts; give this one back now, not at GC.
+    this.renderer.forceContextLoss();
     this.renderer.domElement.remove();
   }
 

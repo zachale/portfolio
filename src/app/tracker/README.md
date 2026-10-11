@@ -26,8 +26,9 @@ repo holds a secret.
 
 There is no sign-in screen. Zach gives each person a personal link
 (`https://zachlegesse.ca/tracker#key=…`, made with `tools/portal/users.sh` in the solar-tracker
-repo). Opening it signs in that device for good: the page takes the key off the address bar at
-once, trades it for a session cookie, and the cookie renews itself while it is used. The key is
+repo). Opening it signs in that device for good: `link-key.ts` takes the key off the address bar
+before anything else runs (main.ts calls it ahead of PostHog, so analytics never sees it), the page
+trades it for a session cookie, and the cookie renews itself while it is used. The key is
 in the URL fragment, which browsers never send to a server, so it stays out of logs. A device
 without a session sees a note to ask Zach for a link.
 
@@ -52,6 +53,7 @@ one screen, with an account button for signing out.
 | `scene/scene-view.component.ts` | Angular wrapper; runs the render loop outside the zone |
 | `history/` | ECharts small multiples (status, panel %, temperature, wind) and the expanded view with a table |
 | `access/` | What a device without a session sees |
+| `link-key.ts` | Takes a personal link's key off the address bar before analytics loads |
 | `ui/tab-bar.component.ts` | The phone's glass tab bar |
 | `telemetry.ts` | Types, status labels and colours, and the derived numbers (today, status since, spans) |
 | `tracker.scss` | Portal styles and design tokens, imported globally and scoped under `.tracker-root` |

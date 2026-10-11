@@ -1,11 +1,11 @@
 import {
   ChangeDetectionStrategy, Component, ElementRef, OnDestroy, OnInit, computed, inject, signal, viewChild,
 } from "@angular/core";
-import { toSignal } from "@angular/core/rxjs-interop";
-import { ActivatedRoute, Router } from "@angular/router";
-import { map } from "rxjs";
+import { takeUntilDestroyed, toSignal } from "@angular/core/rxjs-interop";
+import { ActivatedRoute, NavigationEnd, Router } from "@angular/router";
+import { filter, map } from "rxjs";
 
-import { AccessPanelComponent } from "./access/access-panel.component";
+import { AccessPanelComponent, LinkProblem } from "./access/access-panel.component";
 import { HistoryCardComponent } from "./history/history-card.component";
 import { SceneViewComponent } from "./scene/scene-view.component";
 import { DASHBOARD_FRAMING, Framing, LOGIN_FRAMING_NARROW, LOGIN_FRAMING_WIDE } from "./scene/framing";
@@ -13,12 +13,15 @@ import type { Atmosphere, SceneMoment } from "./scene/tracker-scene";
 import {
   STATUS_META, Telemetry, kmh, relativeTime, siteTime, statusSince, summarizeDay,
 } from "./telemetry";
-import { Session, TrackerApi } from "./tracker-api.service";
+import { ApiError, Session, TrackerApi } from "./tracker-api.service";
+import { captureLinkKey, takeLinkKey } from "./link-key";
 import { ExtensionGaugeComponent } from "./ui/extension-gauge.component";
 import { IconComponent } from "./ui/icon.component";
 import { TabBarComponent, TrackerTab } from "./ui/tab-bar.component";
 
 const REFRESH_MS = 2 * 60 * 1000;
+// Only this page uses it, so it is loaded here rather than on every page of the portfolio.
+const FONT_URL = "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400..800&display=swap";
 const fetchDays = (hours: number) => Math.max(1, Math.ceil(hours / 24));
 // The tracker uploads about every 15 minutes, so half an hour without one is worth a mention.
 const DELAYED_MS = 30 * 60 * 1000;
@@ -46,8 +49,10 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
 
   protected readonly session = signal<Session | null | undefined>(undefined);
-  /** The device opened a personal link that the API turned down. */
-  protected readonly linkFailed = signal(false);
+  /** Why the last personal link didn't sign this device in, if it didn't. */
+  protected readonly linkProblem = signal<LinkProblem | null>(null);
+  /** A key whose exchange failed for want of a connection, kept so Retry needs no new link. */
+  private unsentKey: string | null = null;
   /**
    * The phone's current section, kept in the URL (?view=graphs) so the back button and a reload
    * behave. On desktop every section is on screen at once and this is ignored.
@@ -137,13 +142,33 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
     document.documentElement.style.background = document.body.style.background = "#0f172a";
     this.hadMaterialTypography = document.body.classList.contains("mat-typography");
     document.body.classList.remove("mat-typography");
+    if (!document.querySelector(`link[href="${FONT_URL}"]`)) {
+      document.head.append(Object.assign(document.createElement("link"), { rel: "stylesheet", href: FONT_URL }));
+    }
     this.wideQuery.addEventListener("change", this.onWideChange);
     this.clockTimer = window.setInterval(() => this.now.set(Date.now()), 30_000);
     this.refreshTimer = window.setInterval(() => {
       if (this.session() && document.visibilityState === "visible") this.load(fetchDays(this.hours()), true);
     }, REFRESH_MS);
-    this.session.set(await this.signIn());
-    if (this.session()) this.load(fetchDays(this.hours()));
+    await this.signIn(takeLinkKey());
+  }
+
+  // A link opened in a tab already on this page only changes the fragment, so the page doesn't
+  // reload. main.ts takes the key off the address bar as the hash changes, but the router then
+  // replays the change as a navigation and writes the fragment back; so once that navigation
+  // ends, take it off again and sign in with it.
+  private readonly linksOpenedInPlace = this.router.events
+    .pipe(filter((event) => event instanceof NavigationEnd), takeUntilDestroyed())
+    .subscribe(() => {
+      // The first sign-in (ngOnInit) handles a link the page was opened with.
+      if (this.session() === undefined) return;
+      captureLinkKey();
+      const key = takeLinkKey();
+      if (key) this.signIn(key);
+    });
+
+  protected retryLink(): void {
+    this.signIn(this.unsentKey);
   }
 
   ngOnDestroy(): void {
@@ -159,24 +184,28 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * A personal link carries its key in the URL fragment (#key=…), which browsers never send to a
-   * server, so it stays out of logs. Take it off the address bar straight away, so it isn't left
-   * in the history or on a screenshot, then trade it for a session.
+   * Trades a personal link's key (see link-key.ts) for a session, or else finds out whether this
+   * device already has one. Only a key the API rejects is reported as a dead link; a failure to
+   * reach it keeps the key for Retry.
    */
-  private async signIn(): Promise<Session | null> {
-    const key = new URLSearchParams(location.hash.slice(1)).get("key");
+  private async signIn(key: string | null): Promise<void> {
+    let session: Session | null = null;
     if (key) {
-      history.replaceState(history.state, "", location.pathname + location.search);
+      this.linkProblem.set(null);
       try {
-        return await this.api.link(key);
-      } catch {
-        this.linkFailed.set(true);
+        session = await this.api.link(key);
+        this.unsentKey = null;
+      } catch (error) {
+        const rejected = error instanceof ApiError && (error.status === 400 || error.status === 401);
+        this.unsentKey = rejected ? null : key;
+        this.linkProblem.set(rejected ? "dead" : "unreachable");
       }
     }
-    try {
-      return await this.api.session();
-    } catch {
-      return null;
+    if (!session) session = await this.api.session().catch(() => null);
+    this.session.set(session);
+    if (session) {
+      this.linkProblem.set(null);
+      this.load(fetchDays(this.hours()));
     }
   }
 
