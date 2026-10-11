@@ -68,7 +68,6 @@
   }
   .unit { font-weight: 500; letter-spacing: 0; }
   .text-2 { color: var(--text-2); }
-  .text-3 { color: var(--text-3); }
   .on-scene-2 { color: var(--on-scene-2); }
 
   // Surfaces
@@ -87,10 +86,6 @@
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     animation: tracker-pop var(--dur-base) var(--ease-out) both;
-  }
-  .inset {
-    background: rgba(148, 163, 184, 0.07);
-    border-radius: var(--radius-md);
   }
 
   // The scene and the numbers over it
@@ -240,53 +235,6 @@
     }
   }
 
-  .tile {
-    padding: 16px;
-    dt {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text-2);
-    }
-    dd {
-      margin-top: 12px;
-      font-size: 24px;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-      line-height: 1;
-      font-variant-numeric: tabular-nums;
-      small { font-size: 14px; font-weight: 500; letter-spacing: 0; color: var(--text-2); }
-    }
-  }
-  // Until the first readings land, the tiles hold their size with a placeholder instead of zeros.
-  .is-loading .tile dd {
-    position: relative;
-    visibility: hidden;
-    &::after {
-      content: "";
-      position: absolute;
-      inset: 0 auto 0 0;
-      width: 72px;
-      visibility: visible;
-      border-radius: var(--radius-sm);
-      background: linear-gradient(100deg, rgba(148, 163, 184, 0.06) 30%, rgba(148, 163, 184, 0.14) 50%, rgba(148, 163, 184, 0.06) 70%);
-      background-size: 200% 100%;
-      animation: tracker-shimmer 1.4s linear infinite;
-    }
-  }
-  .tile-icon {
-    display: grid;
-    flex: none;
-    place-items: center;
-    width: 28px;
-    height: 28px;
-    border-radius: var(--radius-sm);
-    color: var(--tone);
-    background: color-mix(in srgb, var(--tone) 16%, transparent);
-  }
-
   .data-table {
     width: 100%;
     text-align: left;
@@ -385,7 +333,7 @@
   :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 
   @media (prefers-reduced-motion: reduce) {
-    .rise, .shimmer, .popover, .is-loading .tile dd::after { animation: none; }
+    .rise, .shimmer, .popover { animation: none; }
     *, *::before { transition-duration: 0s !important; }
   }
 }

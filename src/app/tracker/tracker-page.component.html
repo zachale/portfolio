@@ -93,7 +93,9 @@
                 <p class="stat mt-2 text-[32px] sm:text-[40px]">
                   {{ kmh(r.windMs).toFixed(0) }}<span class="unit on-scene-2 text-[18px] sm:text-[20px]"> km/h</span>
                 </p>
-                <p class="on-scene-2 mt-1.5 min-h-[18px] text-[13px]">Peak gust, last 5 min</p>
+                <p class="on-scene-2 mt-1.5 min-h-[18px] text-[13px]">
+                  @if (today().peakWindMs !== null) { Today's peak {{ kmh(today().peakWindMs!).toFixed(0) }} km/h }
+                </p>
               } @else {
                 <p class="stat mt-2 text-[24px] leading-[32px] sm:text-[28px] sm:leading-[40px]">Sensor off</p>
                 <p class="on-scene-2 mt-1.5 min-h-[18px] text-[13px]">Switched off on site</p>
@@ -132,27 +134,6 @@
           </div>
         }
 
-        <section aria-labelledby="tracker-today-title" [class]="onlyOn('home')">
-          <h2 id="tracker-today-title" class="section-title">Today</h2>
-          <dl class="mt-3 grid grid-cols-2 gap-3" [class.is-loading]="loading() && !readings().length" [attr.aria-busy]="loading()">
-            <div class="card tile">
-              <dt><span class="tile-icon" style="--tone: #d55181"><tracker-icon name="thermometer" [size]="16" /></span> Temperature</dt>
-              <dd>
-                @if (today().minTemperature !== null) {
-                  {{ today().minTemperature!.toFixed(0) }}° <span class="text-2">→</span> {{ today().maxTemperature!.toFixed(0) }}°
-                } @else { — }
-              </dd>
-            </div>
-            <div class="card tile">
-              <dt><span class="tile-icon" style="--tone: #3987e5"><tracker-icon name="wind" [size]="16" /></span> Peak wind</dt>
-              <dd>
-                @if (today().peakWindMs !== null) {
-                  {{ kmh(today().peakWindMs!).toFixed(0) }}<small> km/h</small>
-                } @else { — }
-              </dd>
-            </div>
-          </dl>
-        </section>
 
         <tracker-history-card class="max-lg:pt-[max(8px,env(safe-area-inset-top))]" [class]="onlyOn('graphs')"
           [readings]="rangeReadings()" [hours]="hours()" [end]="rangeEnd()" [loading]="loading()"
