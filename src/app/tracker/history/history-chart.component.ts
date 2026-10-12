@@ -2,18 +2,21 @@ import {
   AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, NgZone, OnDestroy, effect, input, viewChild,
 } from "@angular/core";
 import * as echarts from "echarts/core";
-import { CustomChart, LineChart } from "echarts/charts";
+import { CustomChart, LineChart, ScatterChart } from "echarts/charts";
 import {
   AxisPointerComponent, DataZoomComponent, GridComponent, MarkLineComponent, TitleComponent, TooltipComponent,
+  VisualMapContinuousComponent,
 } from "echarts/components";
 import { CanvasRenderer } from "echarts/renderers";
 
 import { SITE_TIME_ZONE } from "../scene/sun";
-import { Reading, STATUS_META, TrackerStatus, kmh, siteDateTime, statusSpans } from "../telemetry";
+import {
+  Calibration, Reading, SAFE_WIND_MS, STATUS_META, TrackerStatus, kmh, safeTrips, siteDateTime, statusSpans,
+} from "../telemetry";
 
 echarts.use([
-  LineChart, CustomChart, GridComponent, TooltipComponent, TitleComponent, DataZoomComponent, AxisPointerComponent,
-  MarkLineComponent, CanvasRenderer,
+  LineChart, CustomChart, ScatterChart, GridComponent, TooltipComponent, TitleComponent, DataZoomComponent,
+  AxisPointerComponent, MarkLineComponent, VisualMapContinuousComponent, CanvasRenderer,
 ]);
 
 // Validated as a set against the chart surface (dataviz validate_palette.js, dark, all pairs).
@@ -22,6 +25,12 @@ export const SERIES = {
   temperature: { label: "Temperature", unit: "°C", color: "#d55181" },
   wind: { label: "Peak wind", unit: "km/h", color: "#3987e5" },
 } as const;
+
+// Events on the lines (a recalibration, a trip into wind safe mode) and wind past the safe-mode
+// threshold: an orange well apart from every series hue, ringed in the card colour where it sits on a line.
+const EVENT = "#ff7a33";
+const CARD = "#1b2336";
+const SAFE_KMH = kmh(SAFE_WIND_MS);
 
 const STATUS_ORDER: (TrackerStatus | null)[] = ["ACTIVE", "NIGHT", "SAFE", "AWAY", null];
 const GAP_MS = 20 * 60 * 1000;
@@ -66,6 +75,7 @@ function nearest(readings: Reading[], t: number): Reading | null {
 })
 export class HistoryChartComponent implements AfterViewInit, OnDestroy {
   readonly readings = input.required<Reading[]>();
+  readonly calibrations = input<Calibration[]>([]);
   readonly spanHours = input.required<number>();
   /** The right edge of the time axis (epoch ms); the left edge is spanHours before it. */
   readonly end = input.required<number>();
@@ -79,10 +89,11 @@ export class HistoryChartComponent implements AfterViewInit, OnDestroy {
     effect(() => {
       // Read the inputs here so the effect re-runs when they change.
       const readings = this.readings();
+      const calibrations = this.calibrations();
       const spanHours = this.spanHours();
       const end = this.end();
       const expanded = this.expanded();
-      if (this.chart) this.render(readings, spanHours, end, expanded);
+      if (this.chart) this.render(readings, calibrations, spanHours, end, expanded);
     });
   }
 
@@ -98,11 +109,11 @@ export class HistoryChartComponent implements AfterViewInit, OnDestroy {
       this.chart = echarts.init(this.el().nativeElement, null, { renderer: "canvas" });
       this.resizeObserver = new ResizeObserver(() => {
         this.chart?.resize();
-        this.render(this.readings(), this.spanHours(), this.end(), this.expanded());
+        this.render(this.readings(), this.calibrations(), this.spanHours(), this.end(), this.expanded());
       });
       this.resizeObserver.observe(this.el().nativeElement);
     });
-    this.render(this.readings(), this.spanHours(), this.end(), this.expanded());
+    this.render(this.readings(), this.calibrations(), this.spanHours(), this.end(), this.expanded());
   }
 
   ngOnDestroy(): void {
@@ -110,13 +121,26 @@ export class HistoryChartComponent implements AfterViewInit, OnDestroy {
     this.chart?.dispose();
   }
 
-  private render(readings: Reading[], spanHours: number, end: number, expanded: boolean): void {
+  private render(readings: Reading[], calibrations: Calibration[], spanHours: number, end: number, expanded: boolean): void {
     const chart = this.chart;
     if (!chart) return;
     const height = this.el().nativeElement.clientHeight;
     const min = end - spanHours * 3_600_000;
     const labelFor = (t: number) =>
       (spanHours <= 1 ? minuteLabel : spanHours <= 24 ? hourLabel : dayLabel).format(t);
+
+    // Put each event on its line: at the reading nearest it, if there is one close enough.
+    const onLine = (t: number, value: (r: Reading) => number | null) => {
+      const r = nearest(readings, t);
+      const v = r && Math.abs(r.t - t) <= GAP_MS ? value(r) : null;
+      return v === null ? null : [t, v];
+    };
+    const recalibrated = calibrations
+      .filter((c) => c.t >= min && c.t <= end)
+      .map((c) => onLine(c.t, (r) => r.percent))
+      .filter((p): p is number[] => p !== null);
+    const trips = safeTrips(readings).filter((r) => r.windSensor);
+    const tripPoints = trips.map((r) => [r.t, kmh(r.windMs)]);
 
     // Small multiples, one measure each: they have different units, so they never share a y axis.
     const metrics = [
@@ -131,10 +155,23 @@ export class HistoryChartComponent implements AfterViewInit, OnDestroy {
 
     const grids: object[] = [], xAxes: object[] = [], yAxes: object[] = [], titles: object[] = [], series: object[] = [];
     let y = 8;
-    const addTitle = (text: string, color: string | null) => titles.push({
-      text: color ? `{dot|●} ${text}` : text, left: 0, top: y,
-      textStyle: { color: INK.secondary, fontFamily: FONT, fontSize: 12, fontWeight: 600, rich: { dot: { color: color ?? INK.muted, fontSize: 10 } } },
+    // A title, with a key for the orange event dots when the chart shows any.
+    const addTitle = (text: string, color: string | null, events: string | null = null) => titles.push({
+      text: (color ? `{dot|●} ${text}` : text) + (events ? `   {event|●} {note|${events}}` : ""), left: 0, top: y,
+      textStyle: {
+        color: INK.secondary, fontFamily: FONT, fontSize: 12, fontWeight: 600,
+        rich: {
+          dot: { color: color ?? INK.muted, fontSize: 10 },
+          event: { color: EVENT, fontSize: 10 },
+          note: { color: INK.secondary, fontFamily: FONT, fontSize: 12, fontWeight: 500 },
+        },
+      },
     });
+    const addEvents = (axis: number, points: number[][]) => series.push({
+      type: "scatter", xAxisIndex: axis, yAxisIndex: axis, data: points, silent: true, z: 5,
+      symbolSize: 10, itemStyle: { color: EVENT, borderColor: CARD, borderWidth: 2 },
+    });
+    let windSeries = -1;
     const addAxes = (top: number, h: number, last: boolean, yAxis: object) => {
       grids.push({ left: 34, right: 20, top, height: h });
       xAxes.push({
@@ -167,17 +204,22 @@ export class HistoryChartComponent implements AfterViewInit, OnDestroy {
 
     metrics.forEach((metric, i) => {
       const meta = SERIES[metric.key];
-      addTitle(`${meta.label} (${meta.unit})`, meta.color);
+      const events = metric.key === "percent" && recalibrated.length ? "recalibrated"
+        : metric.key === "wind" && tripPoints.length ? "wind safe mode" : null;
+      addTitle(`${meta.label} (${meta.unit})`, meta.color, events);
       const index = grids.length;
       addAxes(y + titleH, chartH, i === metrics.length - 1, {
         type: "value", min: metric.min, max: metric.max, scale: metric.min === undefined, splitNumber: 2,
         axisLabel: { color: INK.muted, fontFamily: FONT, fontSize: 12 },
         splitLine: { lineStyle: { color: INK.grid } },
       });
+      if (metric.key === "wind") windSeries = series.length;
       series.push({
         type: "line", name: meta.label, xAxisIndex: index, yAxisIndex: index,
         data: line(readings, metric.value), showSymbol: false, connectNulls: false, sampling: "lttb",
-        lineStyle: { color: meta.color, width: 2 }, itemStyle: { color: meta.color },
+        // The wind line takes its colour from the visualMap below, which an explicit colour would override.
+        lineStyle: metric.key === "wind" ? { width: 2 } : { color: meta.color, width: 2 },
+        itemStyle: metric.key === "wind" ? undefined : { color: meta.color },
         emphasis: { disabled: true },
         areaStyle: metric.key === "percent" ? {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
@@ -190,6 +232,8 @@ export class HistoryChartComponent implements AfterViewInit, OnDestroy {
           label: { formatter: "flat", color: INK.muted, fontFamily: FONT, fontSize: 11, position: "insideEndTop" },
         } : undefined,
       });
+      if (metric.key === "percent") addEvents(index, recalibrated);
+      if (metric.key === "wind") addEvents(index, tripPoints);
       y += titleH + chartH + gap;
     });
 
@@ -203,6 +247,12 @@ export class HistoryChartComponent implements AfterViewInit, OnDestroy {
       yAxis: yAxes,
       series,
       axisPointer: { link: [{ xAxisIndex: "all" }] },
+      // The wind line stays blue up to the safe-mode threshold and turns orange over the next 25%.
+      visualMap: [{
+        type: "continuous", show: false, seriesIndex: windSeries, dimension: 1, min: 0, max: SAFE_KMH * 1.25,
+        inRange: { color: [SERIES.wind.color, SERIES.wind.color, SERIES.wind.color, SERIES.wind.color, SERIES.wind.color, EVENT] },
+        outOfRange: { color: EVENT },
+      }],
       tooltip: {
         trigger: "axis",
         confine: true,
@@ -215,13 +265,17 @@ export class HistoryChartComponent implements AfterViewInit, OnDestroy {
           const r = nearest(readings, params[0]?.axisValue);
           if (!r) return "";
           const status = STATUS_META[r.status];
+          const note = (text: string) =>
+            `<div style="display:flex;align-items:center;gap:6px;margin-top:6px;color:${INK.primary}"><span style="color:${EVENT}">●</span>${text}</div>`;
           const row = (color: string, label: string, value: string) =>
             `<div style="display:flex;gap:16px;justify-content:space-between;margin-top:4px"><span style="color:${INK.secondary}"><span style="color:${color}">●</span> ${label}</span><b style="font-variant-numeric:tabular-nums">${value}</b></div>`;
           return `<div style="color:${INK.secondary};margin-bottom:6px">${siteDateTime.format(r.t)}</div>`
             + `<div style="display:flex;align-items:center;gap:6px;font-weight:600"><span style="width:8px;height:8px;border-radius:9px;background:${status.color}"></span>${status.label}</div>`
             + row(SERIES.percent.color, "Panel", `${r.percent}%`)
             + row(SERIES.temperature.color, "Temp", `${r.temperature.toFixed(1)} °C`)
-            + row(SERIES.wind.color, "Wind", r.windSensor ? `${kmh(r.windMs).toFixed(0)} km/h` : "sensor off");
+            + row(SERIES.wind.color, "Wind", r.windSensor ? `${kmh(r.windMs).toFixed(0)} km/h` : "sensor off")
+            + (calibrations.some((c) => Math.abs(c.t - r.t) <= 10 * 60 * 1000) ? note("Recalibrated around here") : "")
+            + (trips.includes(r) ? note("Wind safe mode triggered") : "");
         },
       },
       dataZoom: expanded ? [

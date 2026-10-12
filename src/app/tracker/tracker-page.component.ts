@@ -83,6 +83,7 @@ export class TrackerPageComponent implements OnInit, OnDestroy {
 
   protected readonly telemetry = computed(() => this.cache().get(fetchDays(this.hours())) ?? null);
   protected readonly readings = computed(() => this.telemetry()?.readings ?? []);
+  protected readonly calibrations = computed(() => this.telemetry()?.calibrations ?? []);
   /**
    * The history window ends at the newest reading the tracker has synced, not at the clock: it
    * uploads in batches, so "the last hour" counted back from now would often be half empty.

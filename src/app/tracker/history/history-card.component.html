@@ -12,7 +12,7 @@
     </div>
   </div>
   <div class="relative mt-4">
-    <tracker-history-chart class="h-[clamp(430px,calc(100svh-330px),640px)] lg:h-[470px]" [readings]="readings()" [spanHours]="hours()" [end]="end()" />
+    <tracker-history-chart class="h-[clamp(430px,calc(100svh-330px),640px)] lg:h-[470px]" [readings]="readings()" [calibrations]="calibrations()" [spanHours]="hours()" [end]="end()" />
     @if (loading()) {
       <div class="shimmer absolute inset-0 rounded-[var(--radius-md)]" style="background-color: var(--surface-solid)" aria-hidden="true"></div>
     } @else if (!readings().length) {
@@ -60,7 +60,7 @@
       </div>
       <div class="relative mt-4 min-h-0 flex-1">
         @if (view() === "chart") {
-          <tracker-history-chart class="h-full" [readings]="readings()" [spanHours]="hours()" [end]="end()" [expanded]="true" />
+          <tracker-history-chart class="h-full" [readings]="readings()" [calibrations]="calibrations()" [spanHours]="hours()" [end]="end()" [expanded]="true" />
           <p class="pointer-events-none absolute right-0 top-0 hidden text-[12px] text-2 sm:block">
             Scroll or pinch to zoom · drag the handles below
           </p>
