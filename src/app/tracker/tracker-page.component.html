@@ -136,7 +136,7 @@
 
 
         <tracker-history-card class="max-lg:pt-[max(8px,env(safe-area-inset-top))]" [class]="onlyOn('graphs')"
-          [readings]="rangeReadings()" [hours]="hours()" [end]="rangeEnd()" [loading]="loading()"
+          [readings]="rangeReadings()" [calibrations]="calibrations()" [hours]="hours()" [end]="rangeEnd()" [loading]="loading()"
           (hoursChange)="selectHours($event)" />
 
         @if (tab() === "profile") {

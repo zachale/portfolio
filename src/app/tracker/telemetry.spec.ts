@@ -1,5 +1,5 @@
 import { tiltDegrees } from "./scene/tracker-scene";
-import { Reading, TrackerStatus, statusSince, statusSpans, summarizeDay } from "./telemetry";
+import { Reading, TrackerStatus, safeTrips, statusSince, statusSpans, summarizeDay } from "./telemetry";
 
 const MIN = 60_000;
 // 2026-10-10 08:00 at the site (EDT, UTC-4).
@@ -20,6 +20,18 @@ describe("tracker telemetry", () => {
     const spans = statusSpans(rows);
     expect(spans.map((s) => s.status)).toEqual(["NIGHT", "ACTIVE", null, "ACTIVE"]);
     expect(spans[1]).toEqual({ status: "ACTIVE", start: MORNING + 5 * MIN, end: MORNING + 15 * MIN });
+  });
+
+  it("marks each move into wind safe mode once", () => {
+    const rows = [
+      reading(MORNING, "ACTIVE"),
+      reading(MORNING + 5 * MIN, "SAFE"),
+      reading(MORNING + 10 * MIN, "SAFE"),
+      reading(MORNING + 15 * MIN, "ACTIVE"),
+      reading(MORNING + 20 * MIN, "SAFE"),
+    ];
+    expect(safeTrips(rows).map((r) => r.t)).toEqual([MORNING + 5 * MIN, MORNING + 20 * MIN]);
+    expect(safeTrips([reading(MORNING, "SAFE")]).length).toBe(1);
   });
 
   it("finds when the current status began", () => {

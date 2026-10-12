@@ -13,8 +13,15 @@ export interface Reading {
   windSensor: boolean;
 }
 
+/** The actuator recalibrated: when (to within the 15-minute sync that reported it) and how often. */
+export interface Calibration {
+  t: number;
+  count: number;
+}
+
 export interface Telemetry {
   readings: Reading[];
+  calibrations: Calibration[];
   lastUploadAt: number | null;
 }
 
@@ -23,11 +30,13 @@ export interface TelemetryResponse {
   lastUploadAt: string | null;
   statuses: TrackerStatus[];
   rows: [number, number, number, number, number, number][];
+  calibrations: [number, number][];
 }
 
 export function parseTelemetry(body: TelemetryResponse): Telemetry {
   return {
     lastUploadAt: body.lastUploadAt ? Date.parse(body.lastUploadAt) : null,
+    calibrations: body.calibrations.map(([t, count]) => ({ t, count })),
     readings: body.rows.map(([t, percent, temperature, windMs, status, windSensor]) => ({
       t, percent, temperature, windMs, status: body.statuses[status], windSensor: windSensor === 1,
     })),
@@ -43,6 +52,15 @@ export const STATUS_META: Record<TrackerStatus, { label: string; detail: string;
 };
 
 export const kmh = (ms: number) => ms * 3.6;
+
+// The firmware's default (SPEC FR-13): wind held above 24 m/s parks the array flat. The tracker can
+// be set differently from its own dashboard; this is the level the charts treat as too windy.
+export const SAFE_WIND_MS = 24;
+
+/** The readings where the tracker went into wind safe mode. */
+export function safeTrips(readings: Reading[]): Reading[] {
+  return readings.filter((r, i) => r.status === "SAFE" && readings[i - 1]?.status !== "SAFE");
+}
 
 // A row lands every five minutes; a gap longer than this is missing data, not a quiet spell.
 const GAP_MS = 20 * 60 * 1000;

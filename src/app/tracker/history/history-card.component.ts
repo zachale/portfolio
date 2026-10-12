@@ -3,7 +3,7 @@ import {
   ChangeDetectionStrategy, Component, ElementRef, computed, input, output, signal, viewChild,
 } from "@angular/core";
 
-import { Reading, STATUS_META, kmh, siteDateTime } from "../telemetry";
+import { Calibration, Reading, STATUS_META, kmh, siteDateTime } from "../telemetry";
 import { IconComponent } from "../ui/icon.component";
 import { HistoryChartComponent } from "./history-chart.component";
 
@@ -28,6 +28,7 @@ const TABLE_LIMIT = 400;
 })
 export class HistoryCardComponent {
   readonly readings = input.required<Reading[]>();
+  readonly calibrations = input.required<Calibration[]>();
   readonly hours = input.required<number>();
   /** When the window ends: the newest synced reading. */
   readonly end = input.required<number>();
